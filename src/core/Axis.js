@@ -1243,11 +1243,15 @@ anychart.core.Axis.prototype.getLabelBounds_ = function(index, isMajor, ticksArr
   var label = labels.add(formatProvider, positionProvider, index);
   label.stateOrder([label.ownSettings, labels.ownSettings, labels.themeSettings]);
 
-  acgraph.getBBox();
 
+  var settings = label.getMergedSettings();
 
   // var labelBounds = labels.measure(label, undefined, undefined, index);
   // var labelBounds = new anychart.math.Rect(0, 0, 0, 0);
+
+  var text = labels.callFormat(settings['format'], formatProvider, index);
+
+  var labelBounds = acgraph.getRenderer().measure(text, settings);
 
   var labelsSidePosition = anychart.utils.sidePositionToNumber(labelPosition);
 
