@@ -269,8 +269,9 @@ anychart.core.ChartWithOrthogonalScales.prototype.xScale = function(opt_value) {
 
       if (!dispatch) {
         var state = anychart.ConsistencyState.SCALE_CHART_SCALE_MAPS;
+        var legend = this.getLegend();
         if (this.allowLegendCategoriesMode() &&
-            this.legend().itemsSourceMode() == anychart.enums.LegendItemsSourceMode.CATEGORIES) {
+            legend && legend.itemsSourceMode() == anychart.enums.LegendItemsSourceMode.CATEGORIES) {
           state |= anychart.ConsistencyState.CHART_LEGEND;
         }
         state |= this.getScaleAdditionalInvalidationState();
@@ -300,8 +301,9 @@ anychart.core.ChartWithOrthogonalScales.prototype.xScaleInvalidated = function(e
     var state = anychart.ConsistencyState.SCALE_CHART_SCALES |
         anychart.ConsistencyState.SCALE_CHART_Y_SCALES |
         anychart.ConsistencyState.SCALE_CHART_SCALE_MAPS;
+    var legend = this.getLegend();
     if (this.allowLegendCategoriesMode() &&
-        this.legend().itemsSourceMode() == anychart.enums.LegendItemsSourceMode.CATEGORIES) {
+        legend && legend.itemsSourceMode() == anychart.enums.LegendItemsSourceMode.CATEGORIES) {
       state |= anychart.ConsistencyState.CHART_LEGEND;
     }
     this.invalidate(state, anychart.Signal.NEEDS_REDRAW);
