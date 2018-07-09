@@ -42,11 +42,11 @@ if [ "${TRAVIS_BRANCH}" = "master" ] || [ ${DRY_RUN_RELEASE} ]; then
 
     STEP_CHECK_VARIABLES=true
 
-    STEP_NPM_RELEASE=true
+    STEP_NPM_RELEASE=false
     STEP_GIT_RELEASE=true
 
-    STEP_EXPORT_SERVER=true
-    STEP_DOWNLOAD_EXTERNAL=true
+    #STEP_EXPORT_SERVER=true
+    #STEP_DOWNLOAD_EXTERNAL=true
 
     ####  Be sure u wanna uncomment this
     #STEP_LEGACY_7x=true
