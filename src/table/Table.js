@@ -2625,7 +2625,7 @@ anychart.tableModule.Table.prototype.contextMenuItemsProvider = function(context
   // For fired on series point (context['event']['target'] == chart)
   var meta = context['event'] ? anychart.utils.extractTag(context['event']['domTarget']) : null;
   var isSeries = goog.isObject(meta) && goog.isDef(meta.series) &&
-    meta.series['seriesType'] && goog.isDef(meta.index);
+      meta.series['seriesType'] && goog.isDef(meta.index);
   var isPointContext = isSeries || (parentEventTarget && parentEventTarget['seriesType']);
 
   var items = {};
@@ -2818,8 +2818,8 @@ anychart.tableModule.Table.contextMenuItems = {
     'index': 80,
     'iconClass': 'ac ac-cog',
     'text': 'AnyChart ' + (anychart.VERSION ?
-      goog.string.subs.apply(null, ['v%s.%s.%s.%s'].concat(anychart.VERSION.split('.'))) :
-      ' develop version'),
+        goog.string.subs.apply(null, ['v%s.%s.%s.%s'].concat(anychart.VERSION.split('.'))) :
+        ' develop version'),
     'href': 'https://anychart.com'
   },
 
