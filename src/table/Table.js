@@ -22,6 +22,7 @@ goog.forwardDeclare('anychart.ui.ContextMenu.Item');
 goog.forwardDeclare('anychart.ui.ContextMenu.PrepareItemsContext');
 
 
+
 /**
  * Represents table element.<br/>
  * <b>Note:</b> Use {@link anychart.standalones.table} method to create it.
@@ -178,7 +179,7 @@ goog.inherits(anychart.tableModule.Table, anychart.core.VisualBaseWithBounds);
  * @type {number}
  */
 anychart.tableModule.Table.prototype.SUPPORTED_SIGNALS =
-  anychart.core.VisualBaseWithBounds.prototype.SUPPORTED_SIGNALS;
+    anychart.core.VisualBaseWithBounds.prototype.SUPPORTED_SIGNALS;
 
 
 /**
@@ -186,13 +187,13 @@ anychart.tableModule.Table.prototype.SUPPORTED_SIGNALS =
  * @type {number}
  */
 anychart.tableModule.Table.prototype.SUPPORTED_CONSISTENCY_STATES =
-  anychart.core.VisualBaseWithBounds.prototype.SUPPORTED_CONSISTENCY_STATES |
-  anychart.ConsistencyState.TABLE_CELL_BOUNDS |
-  anychart.ConsistencyState.TABLE_OVERLAP |
-  anychart.ConsistencyState.TABLE_BORDERS |
-  anychart.ConsistencyState.TABLE_FILLS |
-  anychart.ConsistencyState.TABLE_CONTENT |
-  anychart.ConsistencyState.TABLE_STRUCTURE;
+    anychart.core.VisualBaseWithBounds.prototype.SUPPORTED_CONSISTENCY_STATES |
+    anychart.ConsistencyState.TABLE_CELL_BOUNDS |
+    anychart.ConsistencyState.TABLE_OVERLAP |
+    anychart.ConsistencyState.TABLE_BORDERS |
+    anychart.ConsistencyState.TABLE_FILLS |
+    anychart.ConsistencyState.TABLE_CONTENT |
+    anychart.ConsistencyState.TABLE_STRUCTURE;
 
 
 //region Private properties with null defaults
@@ -392,7 +393,7 @@ anychart.tableModule.Table.prototype.rowsCount = function(opt_value) {
         this.currentColsCount_ = this.colsCount_;
       this.rowsCount_ = opt_value;
       this.invalidate(anychart.ConsistencyState.TABLE_STRUCTURE | anychart.ConsistencyState.TABLE_OVERLAP,
-        anychart.Signal.NEEDS_REDRAW);
+          anychart.Signal.NEEDS_REDRAW);
     }
     return this;
   }
@@ -414,7 +415,7 @@ anychart.tableModule.Table.prototype.colsCount = function(opt_value) {
         this.currentColsCount_ = this.colsCount_;
       this.colsCount_ = opt_value;
       this.invalidate(anychart.ConsistencyState.TABLE_STRUCTURE | anychart.ConsistencyState.TABLE_OVERLAP,
-        anychart.Signal.NEEDS_REDRAW);
+          anychart.Signal.NEEDS_REDRAW);
     }
     return this;
   }
@@ -683,7 +684,6 @@ anychart.tableModule.Table.prototype.draw = function() {
   if (!this.checkDrawingNeeded())
     return this;
 
-
   if (!this.layer_) {
     this.layer_ = acgraph.layer();
     this.bindHandlersToGraphics(this.layer_);
@@ -699,9 +699,9 @@ anychart.tableModule.Table.prototype.draw = function() {
     this.invalidate(anychart.ConsistencyState.TABLE_CELL_BOUNDS);
     if (anychart.utils.isPercent(this.left()) || anychart.utils.isPercent(this.top())) {
       this.invalidate(
-        anychart.ConsistencyState.TABLE_BORDERS |
-        anychart.ConsistencyState.TABLE_FILLS |
-        anychart.ConsistencyState.TABLE_CONTENT);
+          anychart.ConsistencyState.TABLE_BORDERS |
+          anychart.ConsistencyState.TABLE_FILLS |
+          anychart.ConsistencyState.TABLE_CONTENT);
     }
     this.markConsistent(anychart.ConsistencyState.BOUNDS);
   }
@@ -1008,7 +1008,7 @@ anychart.tableModule.Table.prototype.cellFill = function(opt_fillOrColorOrKeys, 
   if (goog.isDefAndNotNull(opt_fillOrColorOrKeys)) // we want to keep null first param as null, not as 'none'
     opt_fillOrColorOrKeys = acgraph.vector.normalizeFill.apply(null, arguments);
   return /** @type {acgraph.vector.Fill|anychart.tableModule.Table} */(this.settings('fill',
-    /** @type {acgraph.vector.Fill|null|undefined} */(opt_fillOrColorOrKeys), anychart.ConsistencyState.TABLE_FILLS));
+      /** @type {acgraph.vector.Fill|null|undefined} */(opt_fillOrColorOrKeys), anychart.ConsistencyState.TABLE_FILLS));
 };
 
 
@@ -1027,7 +1027,7 @@ anychart.tableModule.Table.prototype.rowOddFill = function(opt_fillOrColorOrKeys
   if (goog.isDefAndNotNull(opt_fillOrColorOrKeys)) // we want to keep null first param as null, not as 'none'
     opt_fillOrColorOrKeys = acgraph.vector.normalizeFill.apply(null, arguments);
   return /** @type {acgraph.vector.Fill|anychart.tableModule.Table} */(this.settings('rowOddFill',
-    /** @type {acgraph.vector.Fill|null|undefined} */(opt_fillOrColorOrKeys), anychart.ConsistencyState.TABLE_FILLS));
+      /** @type {acgraph.vector.Fill|null|undefined} */(opt_fillOrColorOrKeys), anychart.ConsistencyState.TABLE_FILLS));
 };
 
 
@@ -1046,7 +1046,7 @@ anychart.tableModule.Table.prototype.rowEvenFill = function(opt_fillOrColorOrKey
   if (goog.isDefAndNotNull(opt_fillOrColorOrKeys)) // we want to keep null first param as null, not as 'none'
     opt_fillOrColorOrKeys = acgraph.vector.normalizeFill.apply(null, arguments);
   return /** @type {acgraph.vector.Fill|anychart.tableModule.Table} */(this.settings('rowEvenFill',
-    /** @type {acgraph.vector.Fill|null|undefined} */(opt_fillOrColorOrKeys), anychart.ConsistencyState.TABLE_FILLS));
+      /** @type {acgraph.vector.Fill|null|undefined} */(opt_fillOrColorOrKeys), anychart.ConsistencyState.TABLE_FILLS));
 };
 
 
@@ -1171,11 +1171,11 @@ anychart.tableModule.Table.prototype.checkTable_ = function() {
     this.currentColsCount_ = NaN;
     this.markConsistent(anychart.ConsistencyState.TABLE_STRUCTURE);
     this.invalidate(
-      anychart.ConsistencyState.TABLE_CELL_BOUNDS |
-      anychart.ConsistencyState.TABLE_OVERLAP |
-      anychart.ConsistencyState.TABLE_BORDERS |
-      anychart.ConsistencyState.TABLE_FILLS |
-      anychart.ConsistencyState.TABLE_CONTENT);
+        anychart.ConsistencyState.TABLE_CELL_BOUNDS |
+        anychart.ConsistencyState.TABLE_OVERLAP |
+        anychart.ConsistencyState.TABLE_BORDERS |
+        anychart.ConsistencyState.TABLE_FILLS |
+        anychart.ConsistencyState.TABLE_CONTENT);
   }
 };
 
@@ -1189,21 +1189,21 @@ anychart.tableModule.Table.prototype.checkSizes_ = function() {
     var pixelBounds = this.getPixelBounds();
 
     var newColRights = this.countSizes_(this.colsCount_, this.colWidthSettings_, this.colMinWidthSettings_,
-      this.colMaxWidthSettings_, this.defaultColWidth_, this.defaultColMinWidth_, this.defaultColMaxWidth_,
-      pixelBounds.width, this.colRights_);
+        this.colMaxWidthSettings_, this.defaultColWidth_, this.defaultColMinWidth_, this.defaultColMaxWidth_,
+        pixelBounds.width, this.colRights_);
 
     var newRowBottoms = this.countSizes_(this.rowsCount_, this.rowHeightSettings_, this.rowMinHeightSettings_,
-      this.rowMaxHeightSettings_, this.defaultRowHeight_, this.defaultRowMinHeight_, this.defaultRowMaxHeight_,
-      pixelBounds.height, this.rowBottoms_);
+        this.rowMaxHeightSettings_, this.defaultRowHeight_, this.defaultRowMinHeight_, this.defaultRowMaxHeight_,
+        pixelBounds.height, this.rowBottoms_);
 
     this.markConsistent(anychart.ConsistencyState.TABLE_CELL_BOUNDS);
     if (newColRights || newRowBottoms) {
       this.colRights_ = newColRights || this.colRights_;
       this.rowBottoms_ = newRowBottoms || this.rowBottoms_;
       this.invalidate(
-        anychart.ConsistencyState.TABLE_BORDERS |
-        anychart.ConsistencyState.TABLE_FILLS |
-        anychart.ConsistencyState.TABLE_CONTENT);
+          anychart.ConsistencyState.TABLE_BORDERS |
+          anychart.ConsistencyState.TABLE_FILLS |
+          anychart.ConsistencyState.TABLE_CONTENT);
     }
   }
 };
@@ -1235,9 +1235,9 @@ anychart.tableModule.Table.prototype.checkOverlap_ = function() {
     }
     this.markConsistent(anychart.ConsistencyState.TABLE_OVERLAP);
     this.invalidate(
-      anychart.ConsistencyState.TABLE_BORDERS |
-      anychart.ConsistencyState.TABLE_FILLS |
-      anychart.ConsistencyState.TABLE_CONTENT);
+        anychart.ConsistencyState.TABLE_BORDERS |
+        anychart.ConsistencyState.TABLE_FILLS |
+        anychart.ConsistencyState.TABLE_CONTENT);
   }
 };
 
@@ -1255,8 +1255,8 @@ anychart.tableModule.Table.prototype.checkFills_ = function() {
         var cell = this.cells_[row * this.colsCount_ + col];
         if (isNaN(cell.overlapper)) {
           bounds = this.getCellBounds(row, col,
-            /** @type {number} */(cell.rowSpan()),
-            /** @type {number} */(cell.colSpan()), bounds); // rect will be created one time and then reused
+              /** @type {number} */(cell.rowSpan()),
+              /** @type {number} */(cell.colSpan()), bounds); // rect will be created one time and then reused
           var fill = this.getCellFill_(cell, row, col);
           if (fill) {
             var path = this.getFillPath_(fill);
@@ -1288,14 +1288,14 @@ anychart.tableModule.Table.prototype.checkBorders_ = function() {
       cell1 = this.cells_[col];
       if (isNaN(cell1.overlapper))
         this.drawBorder_(0, col, 1, /** @type {number} */(cell1.colSpan()),
-          this.getCellHorizontalBorder_(undefined, cell1), 0);
+            this.getCellHorizontalBorder_(undefined, cell1), 0);
     }
     // drawing left borders for left cells
     for (row = 0; row < this.rowsCount_; row++) {
       cell1 = this.cells_[row * this.colsCount_];
       if (isNaN(cell1.overlapper))
         this.drawBorder_(row, 0, /** @type {number} */(cell1.rowSpan()), 1,
-          this.getCellVerticalBorder_(undefined, cell1), 3);
+            this.getCellVerticalBorder_(undefined, cell1), 3);
     }
     // drawing right and bottom borders for all cells
     for (row = 0; row < this.rowsCount_; row++) {
@@ -1409,7 +1409,7 @@ anychart.tableModule.Table.prototype.checkContent_ = function() {
           content.suspendSignalsDispatching();
           content.unlistenSignals(this.handleContentInvalidation_);
           if (anychart.utils.instanceOf(content, anychart.core.ui.LabelsFactory.Label) ||
-            anychart.utils.instanceOf(content, anychart.core.ui.MarkersFactory.Marker)) {
+              anychart.utils.instanceOf(content, anychart.core.ui.MarkersFactory.Marker)) {
             content.enabled(false);
           } else if (content.isChart && content.isChart()) {
             chart = /** @type {anychart.core.Chart} */(content);
@@ -1440,7 +1440,7 @@ anychart.tableModule.Table.prototype.checkContent_ = function() {
             content.suspendSignalsDispatching();
           if (isNaN(cell.overlapper)) {
             bounds = this.getCellBounds(row, col,
-              /** @type {number} */(cell.rowSpan()), /** @type {number} */(cell.colSpan()), bounds);
+                /** @type {number} */(cell.rowSpan()), /** @type {number} */(cell.colSpan()), bounds);
             padding['top'](this.getPaddingProp_('topPadding', cell, rowObj, colObj, this));
             padding['right'](this.getPaddingProp_('rightPadding', cell, rowObj, colObj, this));
             padding['bottom'](this.getPaddingProp_('bottomPadding', cell, rowObj, colObj, this));
@@ -1454,12 +1454,12 @@ anychart.tableModule.Table.prototype.checkContent_ = function() {
               var vAlign = this.resolveFullProperty_('vAlign', cell, rowObj, colObj, anychart.enums.VAlign.TOP);
               if (hAlign == anychart.enums.HAlign.START) {
                 hAlign = this.resolveFullProperty_('textDirection', cell, rowObj, colObj, anychart.enums.TextDirection.RTL) == anychart.enums.TextDirection.RTL ?
-                  anychart.enums.HAlign.RIGHT :
-                  anychart.enums.HAlign.LEFT;
+                    anychart.enums.HAlign.RIGHT :
+                    anychart.enums.HAlign.LEFT;
               } else if (hAlign == anychart.enums.HAlign.END) {
                 hAlign = this.resolveFullProperty_('textDirection', cell, rowObj, colObj, anychart.enums.TextDirection.RTL) == anychart.enums.TextDirection.RTL ?
-                  anychart.enums.HAlign.LEFT :
-                  anychart.enums.HAlign.RIGHT;
+                    anychart.enums.HAlign.LEFT :
+                    anychart.enums.HAlign.RIGHT;
               }
               var left, top;
               switch (hAlign) {
@@ -1481,7 +1481,7 @@ anychart.tableModule.Table.prototype.checkContent_ = function() {
                 case anychart.enums.VAlign.MIDDLE:
                   top = bounds.top + (bounds.height - realContent.getAbsoluteHeight()) / 2;
                   break;
-                // case anychart.enums.VAlign.TOP:
+                  // case anychart.enums.VAlign.TOP:
                 default:
                   top = bounds.top;
                   break;
@@ -1517,8 +1517,8 @@ anychart.tableModule.Table.prototype.checkContent_ = function() {
                   continue; // we don't want to listen labels of table labelsFactory_.
                 } else {
                   position = /** @type {string} */(label.getOption('position') ||
-                    (label.currentLabelsFactory() && label.currentLabelsFactory().getOption('position')) ||
-                    (label.parentLabelsFactory() && label.parentLabelsFactory().getOption('position')));
+                      (label.currentLabelsFactory() && label.currentLabelsFactory().getOption('position')) ||
+                      (label.parentLabelsFactory() && label.parentLabelsFactory().getOption('position')));
                   positionProvider = {'value': anychart.utils.getCoordinateByAnchor(bounds, position)};
                   label.positionProvider(positionProvider);
                   label.draw();
@@ -1526,9 +1526,9 @@ anychart.tableModule.Table.prototype.checkContent_ = function() {
               } else if (anychart.utils.instanceOf(content, anychart.core.ui.MarkersFactory.Marker)) {
                 marker = /** @type {anychart.core.ui.MarkersFactory.Marker} */(content);
                 position = /** @type {string} */(
-                  marker.position() ||
-                  (marker.currentMarkersFactory() && marker.currentMarkersFactory().position()) ||
-                  (marker.parentMarkersFactory() && marker.parentMarkersFactory().position()));
+                    marker.position() ||
+                    (marker.currentMarkersFactory() && marker.currentMarkersFactory().position()) ||
+                    (marker.parentMarkersFactory() && marker.parentMarkersFactory().position()));
                 positionProvider = {'value': anychart.utils.getCoordinateByAnchor(bounds, position)};
                 marker.positionProvider(positionProvider);
                 marker.draw();
@@ -1715,8 +1715,8 @@ anychart.tableModule.Table.prototype.getCellHorizontalBorder_ = function(topCell
       // checking if the target border is on the top or on the bottom of the column and choosing specific and general
       // settings for this case. The two settings do not conflict, so we check them both here.
       stroke =
-        (!topCell && (col.settings(topBorder) || col.settings(border))) || // the top of the column
-        (!bottomCell && (col.settings(bottomBorder) || col.settings(border))); // the bottom of the column
+          (!topCell && (col.settings(topBorder) || col.settings(border))) || // the top of the column
+          (!bottomCell && (col.settings(bottomBorder) || col.settings(border))); // the bottom of the column
       if (stroke) return /** @type {acgraph.vector.Stroke} */(stroke);
 
       // checking if specific border settings are set for the column cells
@@ -1735,8 +1735,8 @@ anychart.tableModule.Table.prototype.getCellHorizontalBorder_ = function(topCell
     // checking if the target border is on the top or on the bottom of the column and choosing specific and general
     // settings for this case. The two settings do not conflict, so we check them both here.
     stroke =
-      (!topCell && (this.settings(topBorder) || this.settings(border))) || // the top of the column
-      (!bottomCell && (this.settings(bottomBorder) || this.settings(border))); // the bottom of the column
+        (!topCell && (this.settings(topBorder) || this.settings(border))) || // the top of the column
+        (!bottomCell && (this.settings(bottomBorder) || this.settings(border))); // the bottom of the column
     if (stroke) return /** @type {acgraph.vector.Stroke} */(stroke);
 
     // checking if specific border settings are set for the table cells
@@ -1791,8 +1791,8 @@ anychart.tableModule.Table.prototype.getCellVerticalBorder_ = function(leftCell,
       // checking if the target border is on the left or on the right of the column and choosing specific and general
       // settings for this case. The two settings do not conflict, so we check them both here.
       stroke =
-        (!leftCell && (row.settings(leftBorder) || row.settings(border))) || // the top of the column
-        (!rightCell && (row.settings(rightBorder) || row.settings(border))); // the bottom of the column
+          (!leftCell && (row.settings(leftBorder) || row.settings(border))) || // the top of the column
+          (!rightCell && (row.settings(rightBorder) || row.settings(border))); // the bottom of the column
       if (stroke) return /** @type {acgraph.vector.Stroke} */(stroke);
 
       // checking if specific border settings are set for the column cells
@@ -1840,8 +1840,8 @@ anychart.tableModule.Table.prototype.getCellVerticalBorder_ = function(leftCell,
     // checking if the target border is on the left or on the right of the column and choosing specific and general
     // settings for this case. The two settings do not conflict, so we check them both here.
     stroke =
-      (!leftCell && (this.settings(leftBorder) || this.settings(border))) || // the top of the column
-      (!rightCell && (this.settings(rightBorder) || this.settings(border))); // the bottom of the column
+        (!leftCell && (this.settings(leftBorder) || this.settings(border))) || // the top of the column
+        (!rightCell && (this.settings(rightBorder) || this.settings(border))); // the bottom of the column
     if (stroke) return /** @type {acgraph.vector.Stroke} */(stroke);
 
     // checking if specific border settings are set for the table cells
@@ -1909,8 +1909,8 @@ anychart.tableModule.Table.prototype.getBorderPath_ = function(stroke) {
     return this.borderPaths_[hash];
   else {
     var path = this.pathsPool_.length ?
-      /** @type {!acgraph.vector.Path} */(this.pathsPool_.pop()) :
-      acgraph.path();
+        /** @type {!acgraph.vector.Path} */(this.pathsPool_.pop()) :
+        acgraph.path();
     this.layer_.addChild(path);
     if (goog.isObject(stroke) && ('keys' in stroke) && !goog.isObject(stroke['mode'])) {
       stroke = /** @type {acgraph.vector.Stroke} */(anychart.utils.recursiveClone(stroke));
@@ -1936,8 +1936,8 @@ anychart.tableModule.Table.prototype.getFillPath_ = function(fill) {
     return this.fillPaths_[hash];
   else {
     var path = this.pathsPool_.length ?
-      /** @type {!acgraph.vector.Path} */(this.pathsPool_.pop()) :
-      acgraph.path();
+        /** @type {!acgraph.vector.Path} */(this.pathsPool_.pop()) :
+        acgraph.path();
     this.layer_.addChildAt(path, 0);
     path.fill(fill);
     path.stroke(null);
@@ -2196,7 +2196,7 @@ anychart.tableModule.Table.prototype.clearContent = function(content) {
  * @private
  */
 anychart.tableModule.Table.prototype.getSize_ = function(rawSize, minSize, maxSize,
-                                                         defSize, defMinSize, defMaxSize, tableSize) {
+    defSize, defMinSize, defMaxSize, tableSize) {
   rawSize = anychart.utils.normalizeSize(rawSize, tableSize);
   minSize = anychart.utils.normalizeSize(minSize, tableSize);
   maxSize = anychart.utils.normalizeSize(maxSize, tableSize);
@@ -2225,7 +2225,7 @@ anychart.tableModule.Table.prototype.getSize_ = function(rawSize, minSize, maxSi
  * @private
  */
 anychart.tableModule.Table.prototype.countSizes_ = function(sizesCount, sizesSettings, minSizesSettings, maxSizesSettings,
-                                                            defSize, defMinSize, defMaxSize, tableSize, prevSizesArray) {
+    defSize, defMinSize, defMaxSize, tableSize, prevSizesArray) {
   var i, val, size, minSize, maxSize, needsRedraw = false;
   var distributedSize = 0;
   var fixedSizes = [];
@@ -2352,8 +2352,8 @@ anychart.tableModule.Table.prototype.freeCell_ = function(cell) {
  */
 anychart.tableModule.Table.prototype.allocCell_ = function(row, col) {
   return this.cellsPool_.length ? // checking if there are any cells in pool
-    /** @type {anychart.tableModule.elements.Cell} */(this.cellsPool_.pop().reset(row, col)) :
-    new anychart.tableModule.elements.Cell(this, row, col);
+      /** @type {anychart.tableModule.elements.Cell} */(this.cellsPool_.pop().reset(row, col)) :
+      new anychart.tableModule.elements.Cell(this, row, col);
 };
 
 
@@ -2406,10 +2406,10 @@ anychart.tableModule.Table.prototype.getPaddingProp_ = function(propName, var_ar
  */
 anychart.tableModule.Table.prototype.resolveFullProperty_ = function(name, cell, row, col, defVal) {
   return cell.settingsObj && cell.settingsObj[name] ||
-    row && row.settingsObj && row.settingsObj[name] ||
-    col && col.settingsObj && col.settingsObj[name] ||
-    this.settingsObj && this.settingsObj[name] ||
-    defVal;
+      row && row.settingsObj && row.settingsObj[name] ||
+      col && col.settingsObj && col.settingsObj[name] ||
+      this.settingsObj && this.settingsObj[name] ||
+      defVal;
 };
 
 
@@ -2427,7 +2427,7 @@ anychart.tableModule.Table.prototype.createTextCellContent = function(value) {
 /** @inheritDoc */
 anychart.tableModule.Table.prototype.disposeInternal = function() {
   goog.disposeAll(this.cells_, this.cellsPool_, this.rows_, this.cols_,
-    this.fillPaths_, this.borderPaths_, this.pathsPool_);
+      this.fillPaths_, this.borderPaths_, this.pathsPool_);
   goog.dispose(this.labelsFactory_);
   goog.dispose(this.layer_);
   goog.dispose(this.contentLayer_);
@@ -2452,11 +2452,11 @@ anychart.tableModule.Table.prototype.toCsv = function(opt_csvSettings) {
   var rowsCount = this.rowsCount();
   var colsCount = this.colsCount();
   var cell,
-    content;
+      content;
   var i,
-    j,
-    k,
-    l;
+      j,
+      k,
+      l;
   var rows = new Array(rowsCount);
   for (i = 0; i < rowsCount; i++) {
     rows[i] = new Array(colsCount);
@@ -2464,7 +2464,7 @@ anychart.tableModule.Table.prototype.toCsv = function(opt_csvSettings) {
 
   var seenCells = {};
   var colSpan,
-    rowSpan;
+      rowSpan;
   var rowsString = [];
 
   for (i = 0; i < rowsCount; i++) {
