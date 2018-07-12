@@ -18,6 +18,8 @@ goog.require('goog.array');
 anychart.core.ui.Crosshair = function() {
   anychart.core.ui.Crosshair.base(this, 'constructor');
 
+  this.addThemes('crosshair');
+
   /**
    * @type {anychart.core.ChartWithAxes|anychart.mapModule.Chart|anychart.stockModule.Chart|anychart.stockModule.Plot}
    * @private
