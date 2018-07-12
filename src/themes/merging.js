@@ -2101,5 +2101,6 @@ anychart.themes.DefaultThemes = {
   'legendItem': ['defaultFontSettings'],
   'paginator': ['defaultFontSettings'],
   'separator': ['defaultSeparator'],
-  'tooltip': ['defaultFontSettings', 'defaultTooltip']
+  'tooltip': ['defaultFontSettings', 'defaultTooltip'],
+  'crosshair': ['crosshair']
 };
