@@ -482,8 +482,7 @@ anychart.core.ChartWithSeries.prototype.seriesInvalidated = function(event) {
   }
   if (event.hasSignal(anychart.Signal.DATA_CHANGED)) {
     state |= anychart.ConsistencyState.CHART_LABELS;
-    var legend = this.getLegend();
-    if (legend && legend.itemsSourceMode() == anychart.enums.LegendItemsSourceMode.CATEGORIES) {
+    if (this.legend().itemsSourceMode() == anychart.enums.LegendItemsSourceMode.CATEGORIES) {
       // CHART_LABELS invalidation for no data label.
       state |= anychart.ConsistencyState.CHART_LEGEND;
     }
@@ -1349,11 +1348,9 @@ anychart.core.ChartWithSeries.prototype.setupByJSON = function(config, opt_defau
   anychart.core.settings.deserialize(this, anychart.core.ChartWithSeries.PROPERTY_DESCRIPTORS, config, opt_default);
   this.minBubbleSize(config['minBubbleSize']);
   this.maxBubbleSize(config['maxBubbleSize']);
-
-  // this.palette(config['palette']);
-  // this.markerPalette(config['markerPalette']);
-  // this.hatchFillPalette(config['hatchFillPalette']);
-
+  this.palette(config['palette']);
+  this.markerPalette(config['markerPalette']);
+  this.hatchFillPalette(config['hatchFillPalette']);
   this.dataArea().setupInternal(!!opt_default, config['dataArea']);
 
   this.normal_.setupInternal(!!opt_default, config);

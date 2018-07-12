@@ -1845,16 +1845,18 @@ anychart.core.ui.LabelsFactory.Label.prototype.getFinalSettings = function(value
     return {width: adjustByWidth, height: adjustByHeight};
   } else {
     var finalSetting = this.resolveSetting_(value);
+    // var enabled = finalSetting && goog.isDef(finalSetting['enabled']) ? finalSetting['enabled'] : true;
+
     var result;
-    if (value == 'padding') {
-      result = new anychart.core.utils.Padding();
-      result.setup(finalSetting);
-    } else if (value == 'background') {
-      result = new anychart.core.ui.Background();
-      result.setup(finalSetting);
-    } else {
-      result = finalSetting;
-    }
+    // if (value == 'padding' && enabled) {
+    //   result = new anychart.core.utils.Padding();
+    //   result.setup(finalSetting);
+    // } else if (value == 'background' && enabled) {
+    //   result = new anychart.core.ui.Background();
+    //   result.setup(finalSetting);
+    // } else {
+    result = finalSetting;
+    // }
     return result;
   }
 };
@@ -2184,7 +2186,6 @@ anychart.core.ui.LabelsFactory.Label.prototype.drawConnector = function() {
   var positionProvider = this.positionProvider();
   var positionFormatter = this.mergedSettings['positionFormatter'];
   var formattedPosition = goog.object.clone(positionFormatter.call(positionProvider, positionProvider));
-  var position = new goog.math.Coordinate(formattedPosition['x'], formattedPosition['y']);
 
   var connectorPoint = positionProvider && positionProvider['connectorPoint'];
   if (this.connector) {
@@ -2198,6 +2199,7 @@ anychart.core.ui.LabelsFactory.Label.prototype.drawConnector = function() {
     }
     this.connector.stroke(this.mergedSettings['connectorStroke']);
     var formattedConnectorPosition = goog.object.clone(positionFormatter.call(connectorPoint, connectorPoint));
+    var position = new goog.math.Coordinate(formattedPosition['x'], formattedPosition['y']);
     this.connector.moveTo(position.x, position.y).lineTo(formattedConnectorPosition['x'], formattedConnectorPosition['y']);
   }
 };
@@ -2258,7 +2260,7 @@ anychart.core.ui.LabelsFactory.Label.prototype.applyTextSettings = function(text
  */
 anychart.core.ui.LabelsFactory.Label.prototype.draw = function() {
   var factory = this.factory_;
-  var mergedSettings;
+  var mergedSettings, isBackgroundEnabled;
 
   if (!this.layer_) this.layer_ = acgraph.layer();
   this.layer_.tag = this.index_;
@@ -2315,14 +2317,17 @@ anychart.core.ui.LabelsFactory.Label.prototype.draw = function() {
 
     this.layer_.setTransformationMatrix(1, 0, 0, 1, 0, 0);
 
-    var backgroundJson, isBackgroundEnabled;
     var bgSettings = mergedSettings['background'];
-    if (anychart.utils.instanceOf(bgSettings, anychart.core.ui.Background)) {
-      if (bgSettings.enabled() || (this.backgroundElement_ && this.backgroundElement_.enabled()))
-        backgroundJson = bgSettings.serialize();
-    } else {
-      backgroundJson = bgSettings;
-    }
+    var backgroundJson = mergedSettings['background'];
+
+    // var bgSettings = mergedSettings['background'];
+    // if (anychart.utils.instanceOf(bgSettings, anychart.core.ui.Background)) {
+    //   if (bgSettings.enabled() || (this.backgroundElement_ && this.backgroundElement_.enabled()))
+    //     backgroundJson = bgSettings.serialize();
+    // } else {
+    //   backgroundJson = bgSettings;
+    // }
+
     if (goog.isObject(backgroundJson) && backgroundJson && !('enabled' in backgroundJson))
       backgroundJson['enabled'] = false;
 
@@ -2394,66 +2399,85 @@ anychart.core.ui.LabelsFactory.Label.prototype.draw = function() {
       padding.setup(mergedSettings['padding']);
     }
 
-    var autoWidth;
-    var autoHeight;
+    var autoWidth, autoHeight;
     var textElementBounds;
 
-    var width, textWidth;
-    if (isWidthSet) {
-      width = Math.ceil(anychart.utils.normalizeSize(/** @type {number|string} */(mergedSettings['width']), parentWidth));
-      if (padding) {
-        textWidth = padding.tightenWidth(width);
-        this.textX = anychart.utils.normalizeSize(padding.getOption('left'), width);
+    var width, textWidth, height, textHeight;
+
+    if (isWidthSet || isHeightSet) {
+      if (isWidthSet) {
+        width = Math.ceil(anychart.utils.normalizeSize(/** @type {number|string} */(mergedSettings['width']), parentWidth));
+        if (padding) {
+          textWidth = padding.tightenWidth(width);
+          this.textX = anychart.utils.normalizeSize(padding.getOption('left'), width);
+        } else {
+          this.textX = 0;
+          textWidth = width;
+        }
+        outerBounds.width = width;
+        autoWidth = false;
       } else {
-        this.textX = 0;
-        textWidth = width;
+        //we should ask text element about bounds only after text format and text settings are applied
+        textElementBounds = this.textElement.getBounds();
+        width = textElementBounds.width;
+        if (padding) {
+          outerBounds.width = padding.widenWidth(width);
+          this.textX = anychart.utils.normalizeSize(padding.getOption('left'), outerBounds.width);
+        } else {
+          this.textX = 0;
+          outerBounds.width = width;
+        }
+        autoWidth = true;
       }
-      outerBounds.width = width;
-      autoWidth = false;
+
+      if (goog.isDef(textWidth)) this.textElement.width(textWidth);
+
+      if (isHeightSet) {
+        height = Math.ceil(anychart.utils.normalizeSize(/** @type {number|string} */(mergedSettings['height']), parentHeight));
+        if (padding) {
+          textHeight = padding.tightenHeight(height);
+          this.textY = anychart.utils.normalizeSize(padding.getOption('top'), height);
+        } else {
+          this.textY = 0;
+          textHeight = height;
+        }
+        outerBounds.height = height;
+        autoHeight = false;
+      } else {
+        //we should ask text element about bounds only after text format and text settings are applied
+        textElementBounds = this.textElement.getBounds();
+        height = textElementBounds.height;
+        if (padding) {
+          outerBounds.height = padding.widenHeight(height);
+          this.textY = anychart.utils.normalizeSize(padding.getOption('top'), outerBounds.height);
+        } else {
+          this.textY = 0;
+          outerBounds.height = height;
+        }
+        autoHeight = true;
+      }
+
+      if (goog.isDef(textHeight)) this.textElement.height(textHeight);
     } else {
-      //we should ask text element about bounds only after text format and text settings are applied
       textElementBounds = this.textElement.getBounds();
+
       width = textElementBounds.width;
+      height = textElementBounds.height;
       if (padding) {
         outerBounds.width = padding.widenWidth(width);
         this.textX = anychart.utils.normalizeSize(padding.getOption('left'), outerBounds.width);
-      } else {
-        this.textX = 0;
-        outerBounds.width = width;
-      }
-      autoWidth = true;
-    }
-
-    if (goog.isDef(textWidth)) this.textElement.width(textWidth);
-
-    //calculate text height and outer height
-    var height, textHeight;
-    if (isHeightSet) {
-      height = Math.ceil(anychart.utils.normalizeSize(/** @type {number|string} */(mergedSettings['height']), parentHeight));
-      if (padding) {
-        textHeight = padding.tightenHeight(height);
-        this.textY = anychart.utils.normalizeSize(padding.getOption('top'), height);
-      } else {
-        this.textY = 0;
-        textHeight = height;
-      }
-      outerBounds.height = height;
-      autoHeight = false;
-    } else {
-      //we should ask text element about bounds only after text format and text settings are applied
-      textElementBounds = this.textElement.getBounds();
-      height = textElementBounds.height;
-      if (padding) {
         outerBounds.height = padding.widenHeight(height);
         this.textY = anychart.utils.normalizeSize(padding.getOption('top'), outerBounds.height);
       } else {
+        this.textX = 0;
+        outerBounds.width = width;
         this.textY = 0;
         outerBounds.height = height;
       }
+
+      autoWidth = true;
       autoHeight = true;
     }
-
-    if (goog.isDef(textHeight)) this.textElement.height(textHeight);
 
     var canAdjustByWidth = !autoWidth;
     var canAdjustByHeight = !autoHeight;
