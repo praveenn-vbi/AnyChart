@@ -12,7 +12,7 @@ function es_clone_and_build(){
     echo "Building and uploading export server: $1"
     echo "--"
 
-    Run "git clone $1 out/export-server"
+    Run "git clone $1 out/export-server --depth 1"
     Run "cp out/anychart-bundle.min.js out/export-server/resources/js/anychart-bundle.min.js"
     Run "cd out/export-server"
     Run "lein uberjar"
@@ -30,12 +30,12 @@ function es_clone_and_build(){
 
 function build_export_server(){
 
-    es_clone_and_build "https://github.com/AnyChart/export-server.git"
+    es_clone_and_build "git@github.com:AnyChart/export-server.git"
 
     Run "scp -i ~/.ssh/id_rsa out/export-server/target/export-server-standalone.jar $STATIC_HOST_SSH_STRING:/apps/static/cdn/releases/${VERSION}/anychart-export-server-${VERSION}.jar"
     Run "rm -rf out/export-server"
 
-    es_clone_and_build "https://github.com/AnyChart/export-server-private.git"
+    es_clone_and_build "git@github.com:AnyChart/export-server-private.git"
     Run "rm -rf out/export-server"
 
     echo

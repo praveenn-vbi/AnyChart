@@ -2075,7 +2075,7 @@ anychart.pieModule.Chart.prototype.transformCenterContent = function(contentBoun
  */
 anychart.pieModule.Chart.prototype.beforeDraw = function() {
   if (this.palette_ && anychart.utils.instanceOf(this.palette_, anychart.palettes.RangeColors)) {
-    this.palette_.count(this.getIterator().getRowsCount());
+    this.palette_.setAutoCount(this.getIterator().getRowsCount());
   }
 };
 
@@ -5009,8 +5009,22 @@ anychart.pieModule.Chart.PieOutsideLabelsDomain.prototype.calcDomain = function(
 
     if (dAngle > this.maxAngle || isNaN(this.maxAngle) || isNotValidConnectorLength) {
       this.maxAngle = leg < 0 ? Number.POSITIVE_INFINITY : dAngle;
-      this.labelToDrop = label;
-      this.dropIndex = j;
+
+      var minValue = Infinity;
+      var minIndex = 0;
+      for (var i = 0; i < this.labels.length; i++) {
+        iterator.select(this.labels[i].getIndex());
+        var value = /** @type {number|string} */ (iterator.get('value'));
+        if (!isNaN(+value))
+          value = +value;
+        if (value < minValue) {
+          minValue = value;
+          minIndex = i;
+        }
+      }
+
+      this.labelToDrop = this.labels[minIndex];
+      this.dropIndex = minIndex;
     }
     if (dAngle > criticalAngle || isNotValidConnectorLength) this.isCriticalAngle = true;
 

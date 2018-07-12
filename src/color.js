@@ -240,18 +240,24 @@ anychart.color.fillOrStrokeToHex_ = function(fillOrStroke) {
  * @return {(string|acgraph.vector.Fill|acgraph.vector.Stroke)} Hex representation of the lightened color, or Color if color can not be lighten.
  */
 anychart.color.lighten = function(fillOrStroke, opt_factor) {
-  if (goog.isObject(fillOrStroke) && goog.isDef(fillOrStroke['keys'])) {
-    var newFillOrStroke = /** @type {acgraph.vector.Fill} */ (goog.object.clone(fillOrStroke));
-    var keys = newFillOrStroke['keys'];
-    var newKeys = [];
-    for (var i = 0, len = keys.length; i < len; i++) {
-      var key = goog.object.clone(keys[i]);
-      key['color'] = anychart.color.lighten(key['color']);
-      newKeys.push(key);
+  if (goog.isObject(fillOrStroke)) {
+    if (goog.isDef(fillOrStroke['color']) || goog.isDef(fillOrStroke['keys'])) {
+      var newFillOrStroke = /** @type {acgraph.vector.Fill} */ (goog.object.clone(fillOrStroke));
+      if (goog.isDef(fillOrStroke['keys'])) {
+        var keys = newFillOrStroke['keys'];
+        var newKeys = [];
+        for (var i = 0, len = keys.length; i < len; i++) {
+          var key = goog.object.clone(keys[i]);
+          key['color'] = anychart.color.lighten(key['color'], opt_factor);
+          newKeys.push(key);
+        }
+        newFillOrStroke['keys'] = newKeys;
+      }
+      if (goog.isDef(newFillOrStroke['color']))
+        newFillOrStroke['color'] = anychart.color.lighten(newFillOrStroke['color'], opt_factor);
+      return newFillOrStroke;
     }
-    newFillOrStroke['keys'] = newKeys;
-    return newFillOrStroke;
-
+    return fillOrStroke;
   } else {
     var hex;
     // if null is returned then we can't get a hex representation and return the initial color
@@ -282,18 +288,24 @@ anychart.color.lighten = function(fillOrStroke, opt_factor) {
  * @return {(string|acgraph.vector.Fill|acgraph.vector.Stroke)} Hex representation of the darkened color, or Color if color can't be darkened.
  */
 anychart.color.darken = function(fillOrStroke, opt_factor) {
-  if (goog.isObject(fillOrStroke) && goog.isDef(fillOrStroke['keys'])) {
-    var newFillOrStroke = /** @type {acgraph.vector.Fill} */ (goog.object.clone(fillOrStroke));
-    var keys = newFillOrStroke['keys'];
-    var newKeys = [];
-    for (var i = 0, len = keys.length; i < len; i++) {
-      var key = goog.object.clone(keys[i]);
-      key['color'] = anychart.color.darken(key['color']);
-      newKeys.push(key);
+  if (goog.isObject(fillOrStroke)) {
+    if (goog.isDef(fillOrStroke['color']) || goog.isDef(fillOrStroke['keys'])) {
+      var newFillOrStroke = /** @type {acgraph.vector.Fill} */ (goog.object.clone(fillOrStroke));
+      if (goog.isDef(fillOrStroke['keys'])) {
+        var keys = newFillOrStroke['keys'];
+        var newKeys = [];
+        for (var i = 0, len = keys.length; i < len; i++) {
+          var key = goog.object.clone(keys[i]);
+          key['color'] = anychart.color.darken(key['color'], opt_factor);
+          newKeys.push(key);
+        }
+        newFillOrStroke['keys'] = newKeys;
+      }
+      if (goog.isDef(newFillOrStroke['color']))
+        newFillOrStroke['color'] = anychart.color.darken(newFillOrStroke['color'], opt_factor);
+      return newFillOrStroke;
     }
-    newFillOrStroke['keys'] = newKeys;
-    return newFillOrStroke;
-
+    return fillOrStroke;
   } else {
     var hex;
     // if null is returned then we can't get a hex representation and return the initial color
@@ -590,6 +602,19 @@ anychart.color.getNullColor = function() {
 
 
 /**
+ * @param {acgraph.vector.Fill|acgraph.vector.Stroke} color .
+ * @return {boolean}
+ */
+anychart.color.isNotNullColor = function(color) {
+  return color ?
+      goog.isObject(color) ?
+          color['color'] ? color['color'] != 'none' : true
+          : color != 'none'
+      : false;
+};
+
+
+/**
  * Returns final color or hatch fill for passed params.
  * @param {string} colorName
  * @param {!Function} normalizer
@@ -600,13 +625,16 @@ anychart.color.getNullColor = function() {
  * @param {number} state
  * @param {boolean=} opt_ignorePointSettings
  * @param {boolean=} opt_ignoreColorScale
+ * @param {string=} opt_baseColorName
  * @return {acgraph.vector.Fill|acgraph.vector.Stroke|acgraph.vector.PatternFill}
  */
-anychart.color.getColor = function(colorName, normalizer, isHatchFill, canBeHoveredSelected, scrollerSelected, series, state, opt_ignorePointSettings, opt_ignoreColorScale) {
+anychart.color.getColor = function(colorName, normalizer, isHatchFill, canBeHoveredSelected, scrollerSelected, series, state, opt_ignorePointSettings, opt_ignoreColorScale, opt_baseColorName) {
   var stateColor, context;
   state = anychart.core.utils.InteractivityState.clarifyState(state);
+  opt_ignoreColorScale = opt_ignoreColorScale || series.check(anychart.core.drawers.Capabilities.IS_RANGE_BASED);
+  var iterator = series.getIterator();
   if (canBeHoveredSelected && (state != anychart.PointState.NORMAL)) {
-    stateColor = series.resolveOption(colorName, state, series.getIterator(), normalizer, scrollerSelected, void 0, opt_ignorePointSettings);
+    stateColor = series.resolveOption(colorName, state, iterator, normalizer, scrollerSelected, void 0, opt_ignorePointSettings);
     if (isHatchFill && stateColor === true)
       stateColor = normalizer(series.getAutoHatchFill());
     if (goog.isDef(stateColor)) {
@@ -619,13 +647,23 @@ anychart.color.getColor = function(colorName, normalizer, isHatchFill, canBeHove
     }
   }
   // we can get here only if state color is undefined or is a function
-  var color = series.resolveOption(colorName, 0, series.getIterator(), normalizer, scrollerSelected, void 0, opt_ignorePointSettings);
+  var color = series.resolveOption(colorName, 0, iterator, normalizer, scrollerSelected, void 0, opt_ignorePointSettings);
   if (isHatchFill && color === true)
     color = normalizer(series.getAutoHatchFill());
+
+  var baseColor;
+  if (opt_baseColorName && !isHatchFill && colorName != opt_baseColorName) {
+    baseColor = series.resolveOption(opt_baseColorName, 0, iterator, normalizer, scrollerSelected, void 0, opt_ignorePointSettings);
+    if (goog.isFunction(baseColor)) {
+      context = series.getColorResolutionContext(void 0, opt_ignorePointSettings, opt_ignoreColorScale);
+      baseColor = /** @type {acgraph.vector.Fill|acgraph.vector.Stroke|acgraph.vector.PatternFill} */(normalizer(baseColor.call(context, context)));
+    }
+  }
+
   if (goog.isFunction(color)) {
     context = isHatchFill ?
         series.getHatchFillResolutionContext(opt_ignorePointSettings) :
-        series.getColorResolutionContext(void 0, opt_ignorePointSettings, opt_ignoreColorScale);
+        series.getColorResolutionContext(/** @type {acgraph.vector.Fill|acgraph.vector.Stroke} */(baseColor), opt_ignorePointSettings, opt_ignoreColorScale);
     color = /** @type {acgraph.vector.Fill|acgraph.vector.Stroke|acgraph.vector.PatternFill} */(normalizer(color.call(context, context)));
   }
   if (stateColor) { // it is a function and not a hatch fill here

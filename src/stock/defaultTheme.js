@@ -401,7 +401,7 @@ goog.mixin(goog.global['anychart']['themes']['defaultTheme'], {
            * @return {string}
            */
           'format': function() {
-            var date = this['tickValue'];
+            var date = this['dataValue'];
             return anychart.format.dateTime(date, anychart.format.getDateTimeFormat(anychart.format.getIntervalIdentifier(this['majorIntervalUnit'])));
           }
         },
@@ -420,7 +420,7 @@ goog.mixin(goog.global['anychart']['themes']['defaultTheme'], {
            * @return {string}
            */
           'format': function() {
-            var date = this['tickValue'];
+            var date = this['dataValue'];
             return anychart.format.dateTime(date, anychart.format.getDateTimeFormat(anychart.format.getIntervalIdentifier(this['minorIntervalUnit'], this['majorIntervalUnit'])));
           }
         }
@@ -510,7 +510,8 @@ goog.mixin(goog.global['anychart']['themes']['defaultTheme'], {
         'background': {
           'fill': 'none'
         }
-      }
+      },
+      'baseline': 0
     },
     'padding': [20, 30, 20, 60],
     'plots': [{}],
@@ -678,7 +679,7 @@ goog.mixin(goog.global['anychart']['themes']['defaultTheme'], {
            * @return {string}
            */
           'format': function() {
-            var date = this['tickValue'];
+            var date = this['dataValue'];
             return anychart.format.dateTime(date, anychart.format.getDateTimeFormat(anychart.format.getIntervalIdentifier(this['majorIntervalUnit'])));
           }
         },
@@ -692,7 +693,7 @@ goog.mixin(goog.global['anychart']['themes']['defaultTheme'], {
            * @return {string}
            */
           'format': function() {
-            var date = this['tickValue'];
+            var date = this['dataValue'];
             return anychart.format.dateTime(date, anychart.format.getDateTimeFormat(anychart.format.getIntervalIdentifier(this['minorIntervalUnit'], this['majorIntervalUnit'])));
           }
         },

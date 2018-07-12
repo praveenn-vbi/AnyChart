@@ -141,26 +141,26 @@ anychart.stockModule.data.TableIterator.prototype.advance = function() {
 };
 
 
-/**
- * Returns current item.
- * @return {anychart.stockModule.data.TableRow}
- */
+/** @inheritDoc */
 anychart.stockModule.data.TableIterator.prototype.current = function() {
   return this.current_;
 };
 
 
-/**
- * "Selects" iterator to row.
- * @param {anychart.stockModule.data.TableRow} row Row to select to.
- * @param {number=} opt_index Row index.
- */
+/** @inheritDoc */
 anychart.stockModule.data.TableIterator.prototype.specialSelect = function(row, opt_index) {
   if (goog.isDef(row)) {
-    this.current_ = row;
-    this.currentExists_ = true;
-    if (goog.isDef(opt_index))
-      this.currentIndex_ = opt_index;
+    if (this.coIterator_) {
+      this.reset();
+      while(this.advance() && row != this.current()) {
+        // Just advance
+      }
+    } else {
+      this.current_ = /** @type {anychart.stockModule.data.TableRow} */(row);
+      this.currentExists_ = true;
+      if (goog.isDef(opt_index))
+        this.currentIndex_ = opt_index;
+    }
   }
 };
 
