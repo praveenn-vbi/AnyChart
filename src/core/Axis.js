@@ -41,6 +41,8 @@ anychart.core.Axis = function() {
   this.suspendSignalsDispatching();
   anychart.core.Axis.base(this, 'constructor');
 
+  this.addThemes('defaultAxis');
+
   this.labelsBounds_ = [];
   this.minorLabelsBounds_ = [];
 
@@ -280,6 +282,8 @@ anychart.core.Axis.prototype.title = function(opt_value) {
     this.title_.setParentEventTarget(this);
     this.title_.listenSignals(this.titleInvalidated_, this);
     this.registerDisposable(this.title_);
+
+    this.setupCreated('title', this.title_);
   }
 
   if (goog.isDef(opt_value)) {
@@ -1363,12 +1367,13 @@ anychart.core.Axis.prototype.getSize = function(parentBounds, length, opt_includ
   var maxMinorLabelSize = 0;
   var titleSize = 0;
 
-  var title = this.title();
+  // var title = this.title();
+  var title = this.getCreated('title');
   var labels = this.labels();
   var minorLabels = this.minorLabels();
   var orientation = /** @type {anychart.enums.Orientation} */(this.orientation());
 
-  if (title.enabled()) {
+  if (title && title.enabled()) {
     if (!title.container()) title.container(/** @type {acgraph.vector.ILayer} */(this.container()));
     title.suspendSignalsDispatching();
     title.parentBounds(parentBounds);
@@ -1842,7 +1847,10 @@ anychart.core.Axis.prototype.checkDrawingNeeded = function() {
     if (this.hasInvalidationState(anychart.ConsistencyState.ENABLED)) {
       this.remove();
       this.markConsistent(anychart.ConsistencyState.ENABLED);
-      this.title().invalidate(anychart.ConsistencyState.CONTAINER);
+      // this.title().invalidate(anychart.ConsistencyState.CONTAINER);
+      var title = this.getCreated('title');
+      if (title)
+        title.invalidate(anychart.ConsistencyState.CONTAINER);
       this.ticks().invalidate(anychart.ConsistencyState.CONTAINER);
       this.minorTicks().invalidate(anychart.ConsistencyState.CONTAINER);
       this.labels().invalidate(anychart.ConsistencyState.CONTAINER);
@@ -1883,7 +1891,10 @@ anychart.core.Axis.prototype.draw = function() {
   var axisTicks = /** @type {anychart.core.AxisTicks} */(this.ticks());
   var axisMinorTicks = /** @type {anychart.core.AxisTicks} */(this.minorTicks());
 
-  this.title().suspendSignalsDispatching();
+  // this.title().suspendSignalsDispatching();
+  var title = this.getCreated('title');
+  if (title)
+    title.suspendSignalsDispatching();
   this.labels().suspendSignalsDispatching();
   this.minorLabels().suspendSignalsDispatching();
   axisTicks.suspendSignalsDispatching();
@@ -1896,7 +1907,10 @@ anychart.core.Axis.prototype.draw = function() {
 
   if (this.hasInvalidationState(anychart.ConsistencyState.Z_INDEX)) {
     var zIndex = /** @type {number} */(this.zIndex());
-    this.title().zIndex(zIndex);
+    // this.title().zIndex(zIndex);
+    title = this.getCreated('title');
+    if (title)
+      title.zIndex(zIndex);
     this.line.zIndex(zIndex);
     axisTicks.zIndex(zIndex);
     axisMinorTicks.zIndex(zIndex);
@@ -1907,7 +1921,10 @@ anychart.core.Axis.prototype.draw = function() {
 
   if (this.hasInvalidationState(anychart.ConsistencyState.CONTAINER)) {
     var container = /** @type {acgraph.vector.ILayer} */(this.container());
-    this.title().container(container);
+    // this.title().container(container);
+    title = this.getCreated('title');
+    if (title)
+      title.container(container);
     this.line.parent(container);
     axisTicks.container(container);
     axisMinorTicks.container(container);
@@ -1918,10 +1935,13 @@ anychart.core.Axis.prototype.draw = function() {
   }
 
   if (this.hasInvalidationState(anychart.ConsistencyState.AXIS_TITLE)) {
-    var title = this.title();
-    title.parentBounds(this.getPixelBounds());
-    title.defaultOrientation(orientation);
-    title.draw();
+    // var title = this.title();
+    title = this.getCreated('title');
+    if (title) {
+      title.parentBounds(this.getPixelBounds());
+      title.defaultOrientation(orientation);
+      title.draw();
+    }
     this.markConsistent(anychart.ConsistencyState.AXIS_TITLE);
   }
 
@@ -2100,7 +2120,10 @@ anychart.core.Axis.prototype.draw = function() {
     this.labels().draw();
   }
 
-  this.title().resumeSignalsDispatching(false);
+  // this.title().resumeSignalsDispatching(false);
+  title = this.getCreated('title');
+  if (title)
+    title.resumeSignalsDispatching(false);
   this.labels().resumeSignalsDispatching(false);
   this.minorLabels().resumeSignalsDispatching(false);
   axisTicks.resumeSignalsDispatching(false);
@@ -2190,7 +2213,10 @@ anychart.core.Axis.prototype.getLabelsFormatProvider = function(index, value) {
   aliases[anychart.enums.StringToken.AXIS_SCALE_MIN] = 'min';
 
   var tokenCustomValues = {};
-  tokenCustomValues[anychart.enums.StringToken.AXIS_NAME] = {value: this.title().text(), type: anychart.enums.TokenType.STRING};
+  //???
+  // tokenCustomValues[anychart.enums.StringToken.AXIS_NAME] = {value: this.title().text(), type: anychart.enums.TokenType.STRING};
+  if (this.getCreated('title'))
+    tokenCustomValues[anychart.enums.StringToken.AXIS_NAME] = {value: this.title().text(), type: anychart.enums.TokenType.STRING};
 
   var context = new anychart.format.Context(values);
   context.tokenAliases(aliases);
@@ -2316,7 +2342,10 @@ anychart.core.Axis.prototype.hasInsideElements = function() {
 /** @inheritDoc */
 anychart.core.Axis.prototype.serialize = function() {
   var json = anychart.core.Axis.base(this, 'serialize');
-  json['title'] = this.title().serialize();
+  // json['title'] = this.title().serialize();
+  if (this.getCreated('title'))
+    json['title'] = this.title().serialize();
+
   json['labels'] = this.labels().serialize();
   json['minorLabels'] = this.minorLabels().serialize();
   json['ticks'] = this.ticks().serialize();
@@ -2338,8 +2367,8 @@ anychart.core.Axis.prototype.serialize = function() {
 anychart.core.Axis.prototype.setupByJSON = function(config, opt_default) {
   anychart.core.Axis.base(this, 'setupByJSON', config, opt_default);
 
-  if ('title' in config)
-    this.title(config['title']);
+  // if ('title' in config)
+  //   this.title(config['title']);
 
   this.labels().setupInternal(!!opt_default, config['labels']);
   this.minorLabels().setupInternal(!!opt_default, config['minorLabels']);
