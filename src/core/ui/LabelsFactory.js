@@ -724,14 +724,14 @@ anychart.core.ui.LabelsFactory.prototype.draw = function() {
   var manualSuspend = stage && !stage.isSuspended();
   if (manualSuspend) stage.suspend();
 
-  if (this.labels_) {
-    goog.array.forEach(this.labels_, function(label, index) {
-      if (label) {
-        label.container(this.layer_);
-        label.draw();
-      }
-    }, this);
-  }
+  // if (this.labels_) {
+  //   goog.array.forEach(this.labels_, function(label, index) {
+  //     if (label) {
+  //       label.container(this.layer_);
+  //       label.draw();
+  //     }
+  //   }, this);
+  // }
 
   if (this.hasInvalidationState(anychart.ConsistencyState.Z_INDEX)) {
     this.layer_.zIndex(/** @type {number} */(this.zIndex()));
