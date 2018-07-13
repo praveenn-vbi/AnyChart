@@ -605,6 +605,7 @@ anychart.core.ui.Tooltip.prototype.backgroundInvalidated_ = function(event) {
  */
 anychart.core.ui.Tooltip.prototype.title = function(opt_value) {
   if (!this.title_) {
+    debugger;
     this.title_ = new anychart.core.ui.Title();
     this.title_.listenSignals(this.onTitleSignal_, this);
     this.title_.setParentEventTarget(this);
@@ -612,8 +613,6 @@ anychart.core.ui.Tooltip.prototype.title = function(opt_value) {
 
     this.setupCreated('title', this.title_, true);
   }
-
-  console.log('create title', opt_value);
 
   if (goog.isDef(opt_value)) {
     this.title_.setup(opt_value);
@@ -767,7 +766,6 @@ anychart.core.ui.Tooltip.prototype.draw = function() {
       if (title) {
         title.suspendSignalsDispatching();
         title.parentBounds(this.boundsWithoutPadding_);
-        console.log(title.enabled());
         title.draw();
         title.resumeSignalsDispatching(false);
 
@@ -1679,7 +1677,6 @@ anychart.core.ui.Tooltip.prototype.calculateContentBounds_ = function() {
     var tmpWidth = null;
     var tmpHeight = null;
 
-    // var title = /** @type {anychart.core.ui.Title} */(this.title());
     var title = this.getCreated('title');
     var separator = /** @type {anychart.core.ui.Separator} */(this.separator());
     var content = /** @type {anychart.core.ui.Label} */(this.contentInternal());
@@ -2191,10 +2188,11 @@ anychart.core.ui.Tooltip.prototype.getCurrentStageUid_ = function() {
  */
 anychart.core.ui.Tooltip.prototype.parent = function(opt_value) {
   if (goog.isDef(opt_value)) {
-    if (this.parent_ != opt_value) {
+    if (this.parent_ != opt_value)  {
       var uid = String(goog.getUid(this));
       var background = this.getCreated('background');
-      var title = this.getCreated('title');
+      // var title = this.title();
+      var title = this.getCreated('title', true);
       var separator = this.getCreated('separator');
 
       if (goog.isNull(opt_value)) { //removing parent tooltip.
@@ -2220,7 +2218,8 @@ anychart.core.ui.Tooltip.prototype.parent = function(opt_value) {
         this.parent_ = opt_value;
 
         if (title)
-          title.parent(this.parent_.title());
+          // title.parent(this.parent_.title());
+           title.parent(this.parent_.getCreated('title'));
 
         if (separator)
           separator.parent(this.parent_.separator());
