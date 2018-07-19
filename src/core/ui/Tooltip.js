@@ -605,7 +605,6 @@ anychart.core.ui.Tooltip.prototype.backgroundInvalidated_ = function(event) {
  */
 anychart.core.ui.Tooltip.prototype.title = function(opt_value) {
   if (!this.title_) {
-    debugger;
     this.title_ = new anychart.core.ui.Title();
     this.title_.listenSignals(this.onTitleSignal_, this);
     this.title_.setParentEventTarget(this);
@@ -2190,9 +2189,10 @@ anychart.core.ui.Tooltip.prototype.parent = function(opt_value) {
   if (goog.isDef(opt_value)) {
     if (this.parent_ != opt_value)  {
       var uid = String(goog.getUid(this));
-      var background = this.getCreated('background');
-      // var title = this.title();
-      var title = this.getCreated('title', true);
+      // var background = this.getCreated('background');
+      var background = this.background();
+      var title = this.title();
+      // var title = this.getCreated('title', true);
       var separator = this.getCreated('separator');
 
       if (goog.isNull(opt_value)) { //removing parent tooltip.
@@ -2218,14 +2218,13 @@ anychart.core.ui.Tooltip.prototype.parent = function(opt_value) {
         this.parent_ = opt_value;
 
         if (title)
-          // title.parent(this.parent_.title());
            title.parent(this.parent_.getCreated('title'));
 
         if (separator)
           separator.parent(this.parent_.separator());
 
         if (background)
-          background.parent(this.parent_.background());
+          background.parent(this.parent_.getCreated('background'));
 
         this.padding().parent(this.parent_.padding());
         this.contentInternal().padding().parent(this.parent_.contentInternal().padding());
@@ -2449,9 +2448,12 @@ anychart.core.ui.Tooltip.prototype.serialize = function() {
   if (!goog.object.isEmpty(separatorConfig))
     json['separator'] = separatorConfig;
 
-  var bgConfig = this.background().serialize();
-  if (!goog.object.isEmpty(bgConfig))
-    json['background'] = bgConfig;
+  var background = this.getCreated('background');
+  if (background) {
+    var bgConfig = background.serialize();
+    if (!goog.object.isEmpty(bgConfig))
+      json['background'] = bgConfig;
+  }
 
   var paddingConfig = this.padding().serialize();
   if (!goog.object.isEmpty(paddingConfig))

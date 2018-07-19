@@ -727,7 +727,7 @@ anychart.core.ui.Legend.prototype.tooltip = function(opt_value) {
  * @private
  */
 anychart.core.ui.Legend.prototype.onTooltipSignal_ = function(event) {
-  var tooltip = this.getCreated('tooltip');
+  var tooltip = this.tooltip_;
   if (tooltip && tooltip.container()) {
     tooltip.draw();
   }
@@ -740,7 +740,7 @@ anychart.core.ui.Legend.prototype.onTooltipSignal_ = function(event) {
  * @param {anychart.core.MouseEvent} event Event that initiates tooltip display.
  */
 anychart.core.ui.Legend.prototype.showTooltip = function(event) {
-  var tooltip = this.getCreated('tooltip');
+  var tooltip = this.tooltip_;
   if (tooltip && tooltip.enabled()) {
     var index = event['itemIndex'];
     var item = this.items_[index];

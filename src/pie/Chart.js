@@ -4573,7 +4573,7 @@ anychart.pieModule.Chart.prototype.createTooltip = function() {
  * @private
  */
 anychart.pieModule.Chart.prototype.onTooltipSignal_ = function(event) {
-  var tooltip = /** @type {anychart.core.ui.Tooltip} */(this.tooltip());
+  var tooltip = this.getCreated('tooltip');
   tooltip.draw();
 };
 
@@ -4587,7 +4587,8 @@ anychart.pieModule.Chart.prototype.showTooltip = function(opt_event) {
   if (opt_event && legend && opt_event['target'] == legend) {
     return;
   }
-  var tooltip = /** @type {anychart.core.ui.Tooltip} */(this.tooltip());
+  // var tooltip = /** @type {anychart.core.ui.Tooltip} */(this.tooltip());
+  var tooltip = this.getCreated('tooltip');
   var formatProvider = this.createFormatProvider();
   if (opt_event) {
     tooltip.suspendSignalsDispatching();
@@ -4604,7 +4605,7 @@ anychart.pieModule.Chart.prototype.showTooltip = function(opt_event) {
  * @protected
  */
 anychart.pieModule.Chart.prototype.hideTooltip = function() {
-  var tooltip = /** @type {anychart.core.ui.Tooltip} */(this.tooltip());
+  var tooltip = this.getCreated('tooltip');
   this.unlisten(goog.labs.userAgent.device.isDesktop() ?
       goog.events.EventType.MOUSEMOVE : goog.events.EventType.TOUCHSTART, this.showTooltip);
   tooltip.hide();
@@ -4630,8 +4631,9 @@ anychart.pieModule.Chart.prototype.serialize = function() {
   json['palette'] = this.palette().serialize();
   json['hatchFillPalette'] = this.hatchFillPalette().serialize();
 
-  if (this.getCreated('tooltip'))
-    json['tooltip'] = this.tooltip().serialize();
+  var tooltip = this.getCreated('tooltip');
+  if (tooltip)
+    json['tooltip'] = tooltip.serialize();
 
   if (this.getCreated('center'))
     json['center'] = this.center().serialize();

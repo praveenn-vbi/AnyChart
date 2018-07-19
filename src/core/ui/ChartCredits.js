@@ -21,6 +21,8 @@ anychart.core.ui.ChartCredits = function(chart) {
   this.chart_ = chart;
 
   anychart.core.ui.ChartCredits.base(this, 'constructor');
+
+  this.addThemes(anychart.themes.DefaultThemes['chartCredits']);
 };
 goog.inherits(anychart.core.ui.ChartCredits, anychart.core.Base);
 

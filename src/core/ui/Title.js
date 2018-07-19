@@ -395,13 +395,16 @@ anychart.core.ui.Title.prototype.parent = function(opt_value) {
       if (this.parent_)
         this.parent_.unlistenSignals(this.parentInvalidated_, this);
       this.parent_ = opt_value;
+      var background = this.getCreated('backround');
       if (this.parent_) {
         this.parent_.listenSignals(this.parentInvalidated_, this);
-        this.background().parent(this.parent_.background());
+        if (background)
+          background.parent(this.parent_.getCreated('background'));
         this.padding().parent(this.parent_.padding());
         this.margin().parent(this.parent_.margin());
       } else {
-        this.background().parent(null);
+        if (background)
+          background.parent(null);
         this.padding().parent(null);
         this.margin().parent(null);
       }
@@ -645,7 +648,9 @@ anychart.core.ui.Title.prototype.initDom_ = function() {
   if (!this.layer_) {
     isInitial = true;
     this.layer_ = acgraph.layer();
-    this.background().container(this.layer_);
+    var background = this.getCreated('background');
+    if (background)
+      background.container(this.layer_);
     this.text_ = this.layer_.text();
     this.text_.zIndex(.1);
     this.text_.attr('aria-hidden', 'true');
@@ -667,6 +672,8 @@ anychart.core.ui.Title.prototype.draw = function() {
   var isInitial = this.initDom_();
 
   var container = /** @type {acgraph.vector.ILayer} */(this.container());
+
+  var background = this.getCreated('background');
 
   this.suspendSignalsDispatching();
 
@@ -708,11 +715,12 @@ anychart.core.ui.Title.prototype.draw = function() {
 
   // If background appearance changed, we should do something about that.
   if (this.hasInvalidationState(anychart.ConsistencyState.TITLE_BACKGROUND)) {
-    var background = this.background();
-    background.suspendSignalsDispatching();
-    background.parentBounds(0, 0, this.backgroundWidth_, this.backgroundHeight_);
-    background.draw();
-    background.resumeSignalsDispatching(false);
+    if (background) {
+      background.suspendSignalsDispatching();
+      background.parentBounds(0, 0, this.backgroundWidth_, this.backgroundHeight_);
+      background.draw();
+      background.resumeSignalsDispatching(false);
+    }
     this.markConsistent(anychart.ConsistencyState.TITLE_BACKGROUND);
   }
 
@@ -1122,9 +1130,12 @@ anychart.core.ui.Title.prototype.serialize = function() {
   val = this.padding().serialize();
   if (!goog.object.isEmpty(val))
     json['padding'] = val;
-  val = this.background().serialize();
-  if (!goog.object.isEmpty(val))
-    json['background'] = val;
+  var background = this.getCreated('background');
+  if (background) {
+    val = this.background().serialize();
+    if (!goog.object.isEmpty(val))
+      json['background'] = val;
+  }
 
   return json;
 };

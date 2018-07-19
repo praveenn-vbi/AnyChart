@@ -370,7 +370,7 @@ anychart.core.Chart.prototype.createStage = function() {
   var stage = acgraph.create();
   stage.allowCreditsDisabling = this.allowCreditsDisabling;
 
-  stage.credits(this.credits().serializeDiff());
+  stage.credits(this.getCreated('chartCredits').serializeDiff());
   return stage;
 };
 
@@ -797,11 +797,8 @@ anychart.core.Chart.prototype.getStat = function(key) {
  * @return {!(anychart.core.ui.Tooltip|anychart.core.Chart)}
  */
 anychart.core.Chart.prototype.tooltip = function(opt_value) {
-  if (!this.tooltip_) {
+  if (!this.tooltip_)
     this.tooltip_ = this.createTooltip();
-
-    this.setupCreated('tooltip', this.tooltip_, true);
-  }
 
   if (goog.isDef(opt_value)) {
     this.tooltip_.setup(opt_value);
@@ -824,6 +821,8 @@ anychart.core.Chart.prototype.createTooltip = function() {
 
   if (this.supportsBaseHighlight())
     this.listen(anychart.enums.EventType.POINTS_HOVER, this.showTooltip_, true);
+
+  this.setupCreated('tooltip', tooltip, true);
   return tooltip;
 };
 
@@ -1334,6 +1333,8 @@ anychart.core.Chart.prototype.credits = function(opt_value) {
     this.credits_ = new anychart.core.ui.ChartCredits(this);
     this.registerDisposable(this.credits_);
     this.credits_.listenSignals(this.onCreditsSignal_, this);
+
+    this.setupCreated('chartCredits', this.credits_);
   }
 
   if (goog.isDef(opt_value)) {
@@ -1534,10 +1535,11 @@ anychart.core.Chart.prototype.drawCredits = function(parentBounds) {
     return /** @type {!anychart.math.Rect} */(parentBounds);
 
   var stageCredits = stage.credits();
-  var chartCredits = this.credits();
+  var chartCredits = this.getCreated('chartCredits');
 
   stageCredits.setup(chartCredits.serializeDiff());
-  chartCredits.dropSettings();
+  if (chartCredits)
+    chartCredits.dropSettings();
 
   this.markConsistent(anychart.ConsistencyState.CHART_CREDITS);
   return /** @type {!anychart.math.Rect} */(parentBounds);
@@ -1610,7 +1612,7 @@ anychart.core.Chart.prototype.drawInternal = function() {
       this.rootElement.parent(/** @type {acgraph.vector.ILayer} */(this.container()));
     }
 
-    var tooltip = this.getCreated('tooltip');
+    var tooltip = this.tooltip_;
     if (tooltip)
       tooltip.containerProvider(this);
     this.markConsistent(anychart.ConsistencyState.CONTAINER);
@@ -1689,7 +1691,7 @@ anychart.core.Chart.prototype.drawInternal = function() {
   this.markConsistent(anychart.ConsistencyState.CHART_ANIMATION);
 
   if (this.hasInvalidationState(anychart.ConsistencyState.A11Y)) {
-    var a11y = this.getCreated('a11y');
+    var a11y = this.a11y_;
     if (a11y)
       a11y.applyA11y();
     this.markConsistent(anychart.ConsistencyState.A11Y);
@@ -1969,14 +1971,14 @@ anychart.core.Chart.prototype.serialize = function() {
   if (this.getCreated('background'))
     json['background'] = this.background().serialize();
 
-  if (this.getCreated('tooltip'))
-    json['tooltip'] = this.tooltip().serialize();
+  if (this.tooltip_)
+    json['tooltip'] = this.tooltip_.serialize();
 
   json['margin'] = this.margin().serialize();
   json['padding'] = this.padding().serialize();
 
-  if (this.getCreated('a11y'))
-    json['a11y'] = this.a11y().serialize();
+  if (this.a11y_)
+    json['a11y'] = this.a11y_.serialize();
 
   if (goog.isDef(this.autoRedraw_))
     json['autoRedraw'] = this.autoRedraw_;
@@ -1991,15 +1993,16 @@ anychart.core.Chart.prototype.serialize = function() {
   // from VisualBaseWithBounds
   json['bounds'] = this.bounds().serialize();
 
-  if (this.getCreated('animation'))
-    json['animation'] = this.animation().serialize();
+  if (this.animation_)
+    json['animation'] = this.animation_.serialize();
 
   json['noDataLabel'] = this.noData().label().serialize();
   if (this.contextMenu_) {
     json['contextMenu'] = this.contextMenu()['serialize']();
   }
 
-  json['credits'] = this.credits().serialize();
+  if (this.credits_)
+    json['credits'] = this.credits_.serialize();
 
   var exports;
   if (this.exports_)
