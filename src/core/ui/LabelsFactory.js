@@ -681,9 +681,9 @@ anychart.core.ui.LabelsFactory.prototype.add = function(formatProvider, position
   label.formatProvider(formatProvider);
   label.positionProvider(positionProvider);
   label.setFactory(this);
-  label.state('pointNormal', label);
-  label.state('seriesNormal', this);
-  label.state('seriesNormalTheme', this.themeSettings);
+  // label.state('pointNormal', label);
+  // label.state('seriesNormal', this);
+  // label.state('seriesNormalTheme', this.themeSettings);
   label.resumeSignalsDispatching(false);
 
   return label;
@@ -724,14 +724,14 @@ anychart.core.ui.LabelsFactory.prototype.draw = function() {
   var manualSuspend = stage && !stage.isSuspended();
   if (manualSuspend) stage.suspend();
 
-  // if (this.labels_) {
-  //   goog.array.forEach(this.labels_, function(label, index) {
-  //     if (label) {
-  //       label.container(this.layer_);
-  //       label.draw();
-  //     }
-  //   }, this);
-  // }
+  if (this.labels_) {
+    goog.array.forEach(this.labels_, function(label, index) {
+      if (label) {
+        label.container(this.layer_);
+        label.draw();
+      }
+    }, this);
+  }
 
   if (this.hasInvalidationState(anychart.ConsistencyState.Z_INDEX)) {
     this.layer_.zIndex(/** @type {number} */(this.zIndex()));

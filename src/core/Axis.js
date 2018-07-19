@@ -836,7 +836,7 @@ anychart.core.Axis.prototype.getOverlappedLabels_ = function(opt_bounds) {
       var tickVal, ratio, bounds1, bounds2, bounds3, bounds4;
       var tempRatio;
       var k = -1;
-      // var labels = /** @type {anychart.core.ui.LabelsFactory} */(this.labels());
+      var labels = /** @type {anychart.core.ui.LabelsFactory} */(this.labels());
       var labelsPosition = anychart.enums.SidePosition.OUTSIDE;
       var isLabels = true;
       var insideLabelSpace = this.insideBounds_ && anychart.utils.sidePositionToNumber(labelsPosition) < 0  ?
@@ -844,81 +844,81 @@ anychart.core.Axis.prototype.getOverlappedLabels_ = function(opt_bounds) {
       var isLabelInInsideSpace;
 
 
-      this.renderer = acgraph.getRenderer();
-      if (!this.renderer.measurement_)
-        this.renderer.createMeasurement();
+      // this.renderer = acgraph.getRenderer();
+      // if (!this.renderer.measurement_)
+      //   this.renderer.createMeasurement();
+      //
+      // var text, textNode;
+      // var labelsSettings = this.themeSettings['labels'];
+      // var formatter = labelsSettings['format'];
+      // if (goog.isString(formatter))
+      //   formatter = anychart.core.utils.TokenParser.getInstance().getFormat(formatter);
 
-      var text, textNode;
-      var labelsSettings = this.themeSettings['labels'];
-      var formatter = labelsSettings['format'];
-      if (goog.isString(formatter))
-        formatter = anychart.core.utils.TokenParser.getInstance().getFormat(formatter);
-
-      if (!this.labelsArr_) {
-        this.labelsArr_ = [];
-        for (var i = 0, len = ticksArrLen; i < len; i++) {
-          text = this.labelsArr_[i];
-          if (!text) {
-            tickVal = scaleTicksArr[i];
-            var provider = this.getLabelsFormatProvider(i, tickVal);
-            if (goog.isDef(provider) && provider['series']) {
-              var series = /** @type {{getIterator: Function}} */ (provider['series']);
-              var iterator = series.getIterator();
-              if (goog.isFunction(iterator.select))
-                iterator.select(provider['index']);
-            }
-
-            // var text_;
-            // if (i % 2 == 0) {
-            //   text_ = 'dfdsfsdfsdfsdfsdfsdf';
-            // } else {
-              var text_ = formatter.call(provider, provider);
-            // }
-
-            text = this.renderer.createTextElement();
-            textNode = this.renderer.createTextNode(text_);
-
-            var cssString = '';
-            if (labelsSettings['fontStyle']) {
-              cssString += 'font-style: ' + labelsSettings['fontStyle'] + ';';
-            }
-
-            if (labelsSettings['fontVariant']) {
-              cssString += 'font-variant: ' + labelsSettings['fontVariant'] + ';';
-            }
-
-            if (labelsSettings['fontFamily']) {
-              cssString += 'font-family: ' + labelsSettings['fontFamily'] + ';';
-            }
-
-            if (labelsSettings['fontSize']) {
-              cssString += 'font-size: ' + labelsSettings['fontSize'] + ';';
-            }
-
-            if (labelsSettings['fontWeight']) {
-              cssString += 'font-weight: ' + labelsSettings['fontWeight'] + ';';
-            }
-
-            if (labelsSettings['letterSpacing']) {
-              cssString += 'letter-spacing: ' + labelsSettings['letterSpacing'] + ';';
-            }
-
-            if (labelsSettings['decoration']) {
-              cssString += 'text-decoration: ' + labelsSettings['decoration'] + ';';
-            }
-
-            if (labelsSettings['fontColor']) {
-              cssString += 'fill: ' + labelsSettings['fontColor'] + ';';
-            }
-
-            text.style.cssText = cssString;
-
-            goog.dom.appendChild(text, textNode);
-            goog.dom.appendChild(this.renderer.measurement_, text);
-            this.labelsArr_.push(text);
-          }
-        }
-      }
+      // if (!this.labelsArr_) {
+      //   this.labelsArr_ = [];
+      //   for (var i = 0, len = ticksArrLen; i < len; i++) {
+      //     text = this.labelsArr_[i];
+      //     if (!text) {
+      //       tickVal = scaleTicksArr[i];
+      //       var provider = this.getLabelsFormatProvider(i, tickVal);
+      //       if (goog.isDef(provider) && provider['series']) {
+      //         var series = /** @type {{getIterator: Function}} */ (provider['series']);
+      //         var iterator = series.getIterator();
+      //         if (goog.isFunction(iterator.select))
+      //           iterator.select(provider['index']);
+      //       }
+      //
+      //       // var text_;
+      //       // if (i % 2 == 0) {
+      //       //   text_ = 'dfdsfsdfsdfsdfsdfsdf';
+      //       // } else {
+      //         var text_ = formatter.call(provider, provider);
+      //       // }
+      //
+      //       text = this.renderer.createTextElement();
+      //       textNode = this.renderer.createTextNode(text_);
+      //
+      //       var cssString = '';
+      //       if (labelsSettings['fontStyle']) {
+      //         cssString += 'font-style: ' + labelsSettings['fontStyle'] + ';';
+      //       }
+      //
+      //       if (labelsSettings['fontVariant']) {
+      //         cssString += 'font-variant: ' + labelsSettings['fontVariant'] + ';';
+      //       }
+      //
+      //       if (labelsSettings['fontFamily']) {
+      //         cssString += 'font-family: ' + labelsSettings['fontFamily'] + ';';
+      //       }
+      //
+      //       if (labelsSettings['fontSize']) {
+      //         cssString += 'font-size: ' + labelsSettings['fontSize'] + ';';
+      //       }
+      //
+      //       if (labelsSettings['fontWeight']) {
+      //         cssString += 'font-weight: ' + labelsSettings['fontWeight'] + ';';
+      //       }
+      //
+      //       if (labelsSettings['letterSpacing']) {
+      //         cssString += 'letter-spacing: ' + labelsSettings['letterSpacing'] + ';';
+      //       }
+      //
+      //       if (labelsSettings['decoration']) {
+      //         cssString += 'text-decoration: ' + labelsSettings['decoration'] + ';';
+      //       }
+      //
+      //       if (labelsSettings['fontColor']) {
+      //         cssString += 'fill: ' + labelsSettings['fontColor'] + ';';
+      //       }
+      //
+      //       text.style.cssText = cssString;
+      //
+      //       goog.dom.appendChild(text, textNode);
+      //       goog.dom.appendChild(this.renderer.measurement_, text);
+      //       this.labelsArr_.push(text);
+      //     }
+      //   }
+      // }
 
 
       if (anychart.utils.instanceOf(scale, anychart.scales.ScatterBase)) {
@@ -1320,15 +1320,18 @@ anychart.core.Axis.prototype.getLabelBounds_ = function(index, isMajor, ticksArr
   var positionProvider = {'value': {'x': x, 'y': y}};
 
   var label = labels.add(formatProvider, positionProvider, index);
-  label.stateOrder([label.ownSettings, labels.ownSettings, labels.themeSettings]);
+  var settings = {};
+  goog.object.extend(settings, labels.themeSettings, labels.ownSettings, label.ownSettings);
+  label.stateOrder([settings]);
 
 
-  var label = this.labelsArr_[index];
-  this.renderer.setAttr(label, 'x', x);
-  this.renderer.setAttr(label, 'y', y);
+  // var label = this.labelsArr_[index];
+  // this.renderer.setAttr(label, 'x', x);
+  // this.renderer.setAttr(label, 'y', y);
 
-  var bbox = label['getBBox']();
-  var labelBounds = new goog.math.Rect(bbox.x, bbox.y, bbox.width, bbox.height);
+  // var bbox = label['getBBox']();
+  // var labelBounds = new goog.math.Rect(bbox.x, bbox.y, bbox.width, bbox.height);
+  var labelBounds = new goog.math.Rect(0, 0, 0, 0);
 
   // var settings = label.getMergedSettings();
 
@@ -1927,23 +1930,24 @@ anychart.core.Axis.prototype.drawLabel_ = function(value, ratio, index, pixelShi
   var positionProvider = {'value': {x: x, y: y}};
   var label = labels.getLabel(index);
   if (!label) {
+    console.log('!!!');
     var formatProvider = this.getLabelsFormatProvider(index, value);
     label = labels.add(formatProvider, positionProvider, index);
     label.stateOrder([label.ownSettings, labels.ownSettings, labels.themeSettings]);
   }
   label.positionProvider(positionProvider);
 
-  var anchor = this.themeSettings['labels']['anchor'];
-  var anchorCoordinate = anychart.utils.getCoordinateByAnchor(
-      new anychart.math.Rect(0, 0, labelBounds.width, labelBounds.height), anchor);
+  // var anchor = this.themeSettings['labels']['anchor'];
+  // var anchorCoordinate = anychart.utils.getCoordinateByAnchor(
+  //     new anychart.math.Rect(0, 0, labelBounds.width, labelBounds.height), anchor);
+  //
+  // x -= anchorCoordinate.x;
+  // y += anchorCoordinate.y;
 
-  x -= anchorCoordinate.x;
-  y += anchorCoordinate.y;
-
-  var label = this.labelsArr_[index];
-
-  this.renderer.setAttr(label, 'x', x);
-  this.renderer.setAttr(label, 'y', y);
+  // var label = this.labelsArr_[index];
+  //
+  // this.renderer.setAttr(label, 'x', x);
+  // this.renderer.setAttr(label, 'y', y);
 };
 
 
