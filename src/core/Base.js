@@ -373,6 +373,8 @@ anychart.ConsistencyState = {
   QUARTER_LABELS: 1 << 8,
   //----------------------------- EVENT MARKERS (VB) -----------------------------
   EVENT_MARKERS_DATA: 1 << 6,
+  //---------------------------------- SANKEY STATES (CHART) ---------------------------------
+  SANKEY_DATA: 1 << 12,
   /**
    * Combination of all states.
    */

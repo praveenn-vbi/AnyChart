@@ -61,7 +61,8 @@ anychart.enums.ChartTypes = {
   VENN: 'venn',
   HILO: 'hilo',
   WATERFALL: 'waterfall',
-  SUNBURST: 'sunburst'
+  SUNBURST: 'sunburst',
+  SANKEY: 'sankey'
 };
 
 
@@ -5057,7 +5058,8 @@ anychart.enums.normalizeTimeTrackingMode = function(value) {
 anychart.enums.Store = {
   SERIES_CHART: 'serieschart',
   PLOT: 'plot',
-  DATA_AREA: 'dataarea'
+  DATA_AREA: 'dataarea',
+  SANKEY: 'sankey'
 };
 
 
