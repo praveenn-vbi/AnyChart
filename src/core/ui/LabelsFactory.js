@@ -2309,7 +2309,7 @@ anychart.core.ui.LabelsFactory.Label.prototype.draw = function() {
 
   if (this.checkInvalidationState(anychart.ConsistencyState.APPEARANCE | anychart.ConsistencyState.BOUNDS)) {
     this.updateComplexSettings();
-    this.dropMergedSettings();
+    // this.dropMergedSettings();
     mergedSettings = this.getMergedSettings();
 
     var formatProvider = this.formatProvider();
@@ -2392,12 +2392,12 @@ anychart.core.ui.LabelsFactory.Label.prototype.draw = function() {
     //calculate text width and outer width
 
     var padding;
-    if (anychart.utils.instanceOf(mergedSettings['padding'], anychart.core.utils.Padding)) {
-      padding = mergedSettings['padding'];
-    } else if (goog.isObject(mergedSettings['padding']) || goog.isNumber(mergedSettings['padding']) || goog.isString(mergedSettings['padding'])) {
-      padding = new anychart.core.utils.Padding();
-      padding.setup(mergedSettings['padding']);
-    }
+    // if (anychart.utils.instanceOf(mergedSettings['padding'], anychart.core.utils.Padding)) {
+    //   padding = mergedSettings['padding'];
+    // } else if (goog.isObject(mergedSettings['padding']) || goog.isNumber(mergedSettings['padding']) || goog.isString(mergedSettings['padding'])) {
+    //   padding = new anychart.core.utils.Padding();
+    //   padding.setup(mergedSettings['padding']);
+    // }
 
     var autoWidth, autoHeight;
     var textElementBounds;

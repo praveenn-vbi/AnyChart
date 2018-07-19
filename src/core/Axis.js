@@ -844,82 +844,9 @@ anychart.core.Axis.prototype.getOverlappedLabels_ = function(opt_bounds) {
       var isLabelInInsideSpace;
 
 
-      // this.renderer = acgraph.getRenderer();
-      // if (!this.renderer.measurement_)
-      //   this.renderer.createMeasurement();
-      //
-      // var text, textNode;
-      // var labelsSettings = this.themeSettings['labels'];
-      // var formatter = labelsSettings['format'];
-      // if (goog.isString(formatter))
-      //   formatter = anychart.core.utils.TokenParser.getInstance().getFormat(formatter);
-
-      // if (!this.labelsArr_) {
-      //   this.labelsArr_ = [];
-      //   for (var i = 0, len = ticksArrLen; i < len; i++) {
-      //     text = this.labelsArr_[i];
-      //     if (!text) {
-      //       tickVal = scaleTicksArr[i];
-      //       var provider = this.getLabelsFormatProvider(i, tickVal);
-      //       if (goog.isDef(provider) && provider['series']) {
-      //         var series = /** @type {{getIterator: Function}} */ (provider['series']);
-      //         var iterator = series.getIterator();
-      //         if (goog.isFunction(iterator.select))
-      //           iterator.select(provider['index']);
-      //       }
-      //
-      //       // var text_;
-      //       // if (i % 2 == 0) {
-      //       //   text_ = 'dfdsfsdfsdfsdfsdfsdf';
-      //       // } else {
-      //         var text_ = formatter.call(provider, provider);
-      //       // }
-      //
-      //       text = this.renderer.createTextElement();
-      //       textNode = this.renderer.createTextNode(text_);
-      //
-      //       var cssString = '';
-      //       if (labelsSettings['fontStyle']) {
-      //         cssString += 'font-style: ' + labelsSettings['fontStyle'] + ';';
-      //       }
-      //
-      //       if (labelsSettings['fontVariant']) {
-      //         cssString += 'font-variant: ' + labelsSettings['fontVariant'] + ';';
-      //       }
-      //
-      //       if (labelsSettings['fontFamily']) {
-      //         cssString += 'font-family: ' + labelsSettings['fontFamily'] + ';';
-      //       }
-      //
-      //       if (labelsSettings['fontSize']) {
-      //         cssString += 'font-size: ' + labelsSettings['fontSize'] + ';';
-      //       }
-      //
-      //       if (labelsSettings['fontWeight']) {
-      //         cssString += 'font-weight: ' + labelsSettings['fontWeight'] + ';';
-      //       }
-      //
-      //       if (labelsSettings['letterSpacing']) {
-      //         cssString += 'letter-spacing: ' + labelsSettings['letterSpacing'] + ';';
-      //       }
-      //
-      //       if (labelsSettings['decoration']) {
-      //         cssString += 'text-decoration: ' + labelsSettings['decoration'] + ';';
-      //       }
-      //
-      //       if (labelsSettings['fontColor']) {
-      //         cssString += 'fill: ' + labelsSettings['fontColor'] + ';';
-      //       }
-      //
-      //       text.style.cssText = cssString;
-      //
-      //       goog.dom.appendChild(text, textNode);
-      //       goog.dom.appendChild(this.renderer.measurement_, text);
-      //       this.labelsArr_.push(text);
-      //     }
-      //   }
-      // }
-
+      for (var i = 0, len = ticksArrLen; i < len; i++) {
+        this.getLabel(i, true, scaleTicksArr, opt_bounds)
+      }
 
       if (anychart.utils.instanceOf(scale, anychart.scales.ScatterBase)) {
         var scaleMinorTicksArr = scale.minorTicks().get();
@@ -1254,6 +1181,134 @@ anychart.core.Axis.prototype.calcLabels_ = function(opt_bounds) {
 };
 
 
+anychart.core.Axis.prototype.getLabel = function(index, isMajor, ticksArray, opt_parentBounds) {
+  if (!isMajor && this.scale() && !(anychart.utils.instanceOf(this.scale(), anychart.scales.ScatterBase)))
+    return null;
+
+  var labels = isMajor ? this.labels() : this.minorLabels();
+
+  var label = labels.getLabel(index);
+
+  if (!label) {
+    var bounds = goog.isDef(opt_parentBounds) ? opt_parentBounds : this.getPixelBounds();
+    var lineBounds = goog.isDef(opt_parentBounds) ? opt_parentBounds : this.line.getBounds();
+    var ticks = /** @type {!anychart.core.AxisTicks} */(isMajor ? this.ticks() : this.minorTicks());
+    var stroke = this.stroke();
+    var lineThickness = !stroke || anychart.utils.isNone(stroke) ? 0 : stroke['thickness'] ? parseFloat(this.stroke()['thickness']) : 1;
+
+    var x, y;
+    var scale = /** @type {anychart.scales.ScatterBase|anychart.scales.Ordinal} */(this.scale());
+
+    var value = ticksArray[index];
+    var ratio;
+    if (goog.isArray(value)) {
+      ratio = (scale.transform(value[0], 0) + scale.transform(value[1], 1)) / 2;
+      value = value[0];
+    } else {
+      ratio = scale.transform(value, .5);
+    }
+
+    if (ratio < 0 || ratio > 1) return [0, 0];
+
+    var labelPosition = /** @type {anychart.enums.SidePosition} */(labels.getOption('position'));
+    var side = anychart.utils.sidePositionToNumber(labelPosition);
+    var tickLength = anychart.utils.getAffectBoundsTickLength(ticks, side);
+
+    switch (this.orientation()) {
+      case anychart.enums.Orientation.TOP:
+        x = Math.round(bounds.left + ratio * bounds.width);
+        y = lineBounds.top - lineThickness / 2 - tickLength;
+        break;
+      case anychart.enums.Orientation.RIGHT:
+        x = lineBounds.getRight() + lineThickness / 2 + tickLength;
+        y = Math.round(bounds.getBottom() - ratio * bounds.height);
+        break;
+      case anychart.enums.Orientation.BOTTOM:
+        x = Math.round(bounds.left + ratio * bounds.width);
+        y = lineBounds.getBottom() + lineThickness / 2 + tickLength;
+        break;
+      case anychart.enums.Orientation.LEFT:
+        x = lineBounds.left - lineThickness / 2 - tickLength;
+        y = Math.round(bounds.getBottom() - ratio * bounds.height);
+        break;
+    }
+
+    var formatProvider = this.getLabelsFormatProvider(index, value);
+    var positionProvider = {'value': {'x': x, 'y': y}};
+
+    label = labels.add(formatProvider, positionProvider, index);
+    var settings = {};
+    goog.object.extend(settings, labels.themeSettings, labels.ownSettings, label.ownSettings);
+    label.stateOrder([settings]);
+
+    var mergedSettings = label.getMergedSettings();
+    var text = labels.callFormat(mergedSettings['format'], formatProvider, index);
+    var textEl = label.getTextElement();
+    textEl.text(goog.isDef(text) ? String(text) : '');
+    label.applyTextSettings(textEl, true, mergedSettings);
+    var measurementNode = acgraph.getRenderer().createMeasurement();
+    if (!textEl.domElement()) {
+      textEl.createDom(true);
+    }
+    var textElDom = textEl.domElement();
+    acgraph.getRenderer().setTextProperties(textEl);
+    textElDom.innerHTML = text;
+    goog.dom.appendChild(measurementNode, textElDom);
+    textElDom.setAttribute('x', x);
+    textElDom.setAttribute('y', y);
+
+    // var bbox = textElDom['getBBox']();
+    // var labelBounds = new goog.math.Rect(bbox.x, bbox.y, bbox.width, bbox.height);
+    // console.log(labelBounds, text);
+
+    // var label = this.labelsArr_[index];
+    // this.renderer.setAttr(label, 'x', x);
+    // this.renderer.setAttr(label, 'y', y);
+
+    // var bbox = label['getBBox']();
+    // var labelBounds = new goog.math.Rect(bbox.x, bbox.y, bbox.width, bbox.height);
+    // var labelBounds = new goog.math.Rect(0, 0, 0, 0);
+
+    // var settings = label.getMergedSettings();
+
+    // var labelBounds = labels.measure(label, undefined, undefined, index);
+    // var labelBounds = new anychart.math.Rect(0, 0, 0, 0);
+
+    // var text = labels.callFormat(settings['format'], formatProvider, index);
+
+    // var labelBounds = acgraph.getRenderer().measure(text, settings);
+
+    // var labelsSidePosition = anychart.utils.sidePositionToNumber(labelPosition);
+    //
+    // switch (this.orientation()) {
+    //   case anychart.enums.Orientation.TOP:
+    //     labelBounds.top -= labelsSidePosition * labelBounds.height / 2;
+    //     break;
+    //   case anychart.enums.Orientation.RIGHT:
+    //     labelBounds.left += labelsSidePosition * labelBounds.width / 2;
+    //     break;
+    //   case anychart.enums.Orientation.BOTTOM:
+    //     labelBounds.top += labelsSidePosition * labelBounds.height / 2;
+    //     break;
+    //   case anychart.enums.Orientation.LEFT:
+    //     labelBounds.left -= labelsSidePosition * labelBounds.width / 2;
+    //     break;
+    // }
+    //
+    // var anchor = this.themeSettings['labels']['anchor'];
+    // var anchorCoordinate = anychart.utils.getCoordinateByAnchor(
+    //     new anychart.math.Rect(0, 0, labelBounds.width, labelBounds.height), anchor);
+    //
+    // labelBounds.left -= anchorCoordinate.x;
+    // labelBounds.top += anchorCoordinate.y;
+    //
+    // return boundsCache[index] = labelBounds.toCoordinateBox();
+  }
+
+  return label;
+};
+
+
 /**
  * Calculate label bounds.
  * @param {number} index Label index.
@@ -1316,22 +1371,42 @@ anychart.core.Axis.prototype.getLabelBounds_ = function(index, isMajor, ticksArr
       break;
   }
 
-  var formatProvider = this.getLabelsFormatProvider(index, value);
+  // var formatProvider = this.getLabelsFormatProvider(index, value);
   var positionProvider = {'value': {'x': x, 'y': y}};
 
-  var label = labels.add(formatProvider, positionProvider, index);
-  var settings = {};
-  goog.object.extend(settings, labels.themeSettings, labels.ownSettings, label.ownSettings);
-  label.stateOrder([settings]);
+  var label = labels.getLabel(index);
+  label.positionProvider(positionProvider);
+  // var settings = {};
+  // goog.object.extend(settings, labels.themeSettings, labels.ownSettings, label.ownSettings);
+  // label.stateOrder([settings]);
+
+  // var mergedSettings = label.getMergedSettings();
+  // var text = labels.callFormat(mergedSettings['format'], formatProvider, label.getIndex());
+  //
+  var textEl = label.getTextElement();
+  // textEl.text(goog.isDef(text) ? String(text) : '');
+  // label.applyTextSettings(textEl, true, mergedSettings);
+  // var measurementNode = acgraph.getRenderer().createMeasurement();
+  // if (!textEl.domElement()) {
+  //   textEl.createDom(true);
+  // }
+  var textElDom = textEl.domElement();
+  // acgraph.getRenderer().setTextProperties(textEl);
+  // textElDom.nodeValue = text;
+  // goog.dom.appendChild(measurementNode, textElDom);
+  //
+  var bbox = textElDom['getBBox']();
+  var labelBounds = new goog.math.Rect(bbox.x, bbox.y, bbox.width, bbox.height);
 
 
+  // console.log(labelBounds);
   // var label = this.labelsArr_[index];
   // this.renderer.setAttr(label, 'x', x);
   // this.renderer.setAttr(label, 'y', y);
 
   // var bbox = label['getBBox']();
   // var labelBounds = new goog.math.Rect(bbox.x, bbox.y, bbox.width, bbox.height);
-  var labelBounds = new goog.math.Rect(0, 0, 0, 0);
+  // var labelBounds = new goog.math.Rect(0, 0, 0, 0);
 
   // var settings = label.getMergedSettings();
 
