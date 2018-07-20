@@ -2095,7 +2095,7 @@ anychart.themes.merging.typedEntities_ = {
  * @type {Object}
  */
 anychart.themes.DefaultThemes = {
-  'title': ['defaultFontSettings', 'defaultTitle'],
+  'title': ['defaultFontSettings', 'defaultBackground', 'defaultTitle'],
   'background': ['defaultBackground'],
   'legend': ['defaultFontSettings', 'defaultLegend'],
   'legendItem': ['defaultFontSettings'],

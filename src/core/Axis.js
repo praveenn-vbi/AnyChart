@@ -1379,7 +1379,6 @@ anychart.core.Axis.prototype.getSize = function(parentBounds, length, opt_includ
   var maxMinorLabelSize = 0;
   var titleSize = 0;
 
-  // var title = this.title();
   var title = this.getCreated('title');
   var labels = this.getCreated('labels');
   var minorLabels = this.getCreated('minorLabels');
@@ -1859,7 +1858,6 @@ anychart.core.Axis.prototype.checkDrawingNeeded = function() {
     if (this.hasInvalidationState(anychart.ConsistencyState.ENABLED)) {
       this.remove();
       this.markConsistent(anychart.ConsistencyState.ENABLED);
-      // this.title().invalidate(anychart.ConsistencyState.CONTAINER);
       var title = this.getCreated('title');
       if (title)
         title.invalidate(anychart.ConsistencyState.CONTAINER);
@@ -1924,7 +1922,6 @@ anychart.core.Axis.prototype.draw = function() {
 
   if (this.hasInvalidationState(anychart.ConsistencyState.Z_INDEX)) {
     var zIndex = /** @type {number} */(this.zIndex());
-    // this.title().zIndex(zIndex);
     title = this.getCreated('title');
     if (title)
       title.zIndex(zIndex);
@@ -1940,7 +1937,6 @@ anychart.core.Axis.prototype.draw = function() {
 
   if (this.hasInvalidationState(anychart.ConsistencyState.CONTAINER)) {
     var container = /** @type {acgraph.vector.ILayer} */(this.container());
-    // this.title().container(container);
     title = this.getCreated('title');
     if (title)
       title.container(container);
@@ -1956,7 +1952,6 @@ anychart.core.Axis.prototype.draw = function() {
   }
 
   if (this.hasInvalidationState(anychart.ConsistencyState.AXIS_TITLE)) {
-    // var title = this.title();
     title = this.getCreated('title');
     if (title) {
       title.parentBounds(this.getPixelBounds());
@@ -2139,7 +2134,6 @@ anychart.core.Axis.prototype.draw = function() {
     this.labels_.draw();
   }
 
-  // this.title().resumeSignalsDispatching(false);
   title = this.getCreated('title');
   if (title)
     title.resumeSignalsDispatching(false);
@@ -2232,8 +2226,6 @@ anychart.core.Axis.prototype.getLabelsFormatProvider = function(index, value) {
   aliases[anychart.enums.StringToken.AXIS_SCALE_MIN] = 'min';
 
   var tokenCustomValues = {};
-  //???
-  // tokenCustomValues[anychart.enums.StringToken.AXIS_NAME] = {value: this.title().text(), type: anychart.enums.TokenType.STRING};
   if (this.getCreated('title'))
     tokenCustomValues[anychart.enums.StringToken.AXIS_NAME] = {value: this.title().text(), type: anychart.enums.TokenType.STRING};
 
@@ -2363,7 +2355,6 @@ anychart.core.Axis.prototype.hasInsideElements = function() {
 /** @inheritDoc */
 anychart.core.Axis.prototype.serialize = function() {
   var json = anychart.core.Axis.base(this, 'serialize');
-  // json['title'] = this.title().serialize();
   if (this.getCreated('title'))
     json['title'] = this.title().serialize();
 
