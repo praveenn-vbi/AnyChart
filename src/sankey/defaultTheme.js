@@ -1,4 +1,4 @@
-goog.provide('anychart.pertModule.defaultTheme');
+goog.provide('anychart.sankeyModule.defaultTheme');
 
 
 goog.mixin(goog.global['anychart']['themes']['defaultTheme'], {

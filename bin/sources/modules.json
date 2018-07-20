@@ -157,6 +157,12 @@
         "gantt-base"
       ]
     },
+    "sankey": {
+      "entry": "anychart.sankeyModule.entry",
+      "deps": [
+        "core"
+      ]
+    },
     "scatter": {
       "entry": "anychart.scatterModule.entry",
       "deps": [

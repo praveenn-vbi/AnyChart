@@ -387,6 +387,9 @@ goog.addDependency('../../../../src/resource/resourcelist/Item.js', ['anychart.r
 goog.addDependency('../../../../src/resource/resourcelist/Settings.js', ['anychart.resourceModule.resourceList.Settings'], ['anychart.core.Base', 'anychart.core.utils.Margin'], {});
 goog.addDependency('../../../../src/resource/resourcelist/TagsSettings.js', ['anychart.resourceModule.resourceList.TagsSettings'], ['anychart.core.ui.Background', 'anychart.core.utils.Padding', 'anychart.resourceModule.resourceList.TextSettings'], {});
 goog.addDependency('../../../../src/resource/resourcelist/TextSettings.js', ['anychart.resourceModule.resourceList.TextSettings'], ['anychart.core.settings', 'anychart.resourceModule.resourceList.Settings'], {});
+goog.addDependency('../../../../src/sankey/Chart.js', ['anychart.sankeyModule.Chart'], ['anychart.core.SeparateChart'], {});
+goog.addDependency('../../../../src/sankey/defaultTheme.js', ['anychart.sankeyModule.defaultTheme'], [], {});
+goog.addDependency('../../../../src/sankey/sankey.module.js', ['anychart.sankeyModule.entry'], ['anychart.sankeyModule.Chart'], {});
 goog.addDependency('../../../../src/scales/Base.js', ['anychart.scales.Base'], ['anychart.core.Base', 'anychart.enums', 'anychart.scales.IXScale'], {});
 goog.addDependency('../../../../src/scales/Continuous.js', ['anychart.scales.Continuous'], ['anychart.format', 'anychart.math', 'anychart.utils', 'goog.array'], {});
 goog.addDependency('../../../../src/scales/DateTime.js', ['anychart.scales.DateTime'], ['anychart.enums', 'anychart.scales.Continuous', 'anychart.scales.DateTimeTicks', 'anychart.scales.ScatterBase'], {});

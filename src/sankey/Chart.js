@@ -160,6 +160,19 @@ anychart.sankeyModule.Chart.prototype.getIterator = function() {
 //endregion
 //region Infrastructure
 /**
+ * @typedef {{
+ *   level: number,
+ *   incomeValue: number,
+ *   outcomeValue: number,
+ *   incomeNodes: Array.<string>,
+ *   outcomeNodes: Array.<string>,
+ *   dropoffValues: Array.<string>
+ * }}
+ */
+anychart.sankeyModule.Chart.NodeMeta;
+
+
+/**
  * Calculate node levels.
  * @private
  */
