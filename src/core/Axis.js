@@ -9,6 +9,7 @@ goog.require('anychart.core.IStandaloneBackend');
 goog.require('anychart.core.VisualBase');
 goog.require('anychart.core.reporting');
 goog.require('anychart.core.ui.LabelsFactory');
+goog.require('anychart.core.ui.Text');
 goog.require('anychart.core.ui.Title');
 goog.require('anychart.core.utils.Padding');
 goog.require('anychart.enums');
@@ -1244,18 +1245,14 @@ anychart.core.Axis.prototype.getLabel = function(index, isMajor, ticksArray, opt
     var mergedSettings = label.getMergedSettings();
     var text = labels.callFormat(mergedSettings['format'], formatProvider, index);
     var textEl = label.getTextElement();
+
     textEl.text(goog.isDef(text) ? String(text) : '');
     label.applyTextSettings(textEl, true, mergedSettings);
+    textEl.applySettings();
     var measurementNode = acgraph.getRenderer().createMeasurement();
-    if (!textEl.domElement()) {
-      textEl.createDom(true);
-    }
-    var textElDom = textEl.domElement();
-    acgraph.getRenderer().setTextProperties(textEl);
-    textElDom.innerHTML = text;
-    goog.dom.appendChild(measurementNode, textElDom);
-    textElDom.setAttribute('x', x);
-    textElDom.setAttribute('y', y);
+    textEl.setPosition(x, y);
+    textEl.renderTo(measurementNode);
+
 
     // var bbox = textElDom['getBBox']();
     // var labelBounds = new goog.math.Rect(bbox.x, bbox.y, bbox.width, bbox.height);
@@ -1390,14 +1387,15 @@ anychart.core.Axis.prototype.getLabelBounds_ = function(index, isMajor, ticksArr
   // if (!textEl.domElement()) {
   //   textEl.createDom(true);
   // }
-  var textElDom = textEl.domElement();
+  // var textElDom = textEl.domElement();
   // acgraph.getRenderer().setTextProperties(textEl);
   // textElDom.nodeValue = text;
   // goog.dom.appendChild(measurementNode, textElDom);
-  //
-  var bbox = textElDom['getBBox']();
-  var labelBounds = new goog.math.Rect(bbox.x, bbox.y, bbox.width, bbox.height);
 
+  // var bbox = textElDom['getBBox']();
+  // var labelBounds = new goog.math.Rect(bbox.x, bbox.y, bbox.width, bbox.height);
+
+  var labelBounds = textEl.getBounds();
 
   // console.log(labelBounds);
   // var label = this.labelsArr_[index];

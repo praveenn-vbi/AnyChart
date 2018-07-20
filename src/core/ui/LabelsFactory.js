@@ -2123,10 +2123,12 @@ anychart.core.ui.LabelsFactory.Label.prototype.clear = function() {
  */
 anychart.core.ui.LabelsFactory.Label.prototype.drawLabel = function(bounds, parentBounds) {
   var positionFormatter = this.mergedSettings['positionFormatter'];
-  var isTextByPath = !!this.textElement.path();
-  var anchor = isTextByPath ?
-      anychart.enums.Anchor.CENTER :
-      anychart.core.ui.LabelsFactory.anchorNoAutoNormalizer(this.mergedSettings['anchor']) || anychart.enums.Anchor.LEFT_TOP;
+  // var isTextByPath = !!this.textElement.path();
+  // var anchor = isTextByPath ?
+  //     anychart.enums.Anchor.CENTER :
+  //     anychart.core.ui.LabelsFactory.anchorNoAutoNormalizer(this.mergedSettings['anchor']) || anychart.enums.Anchor.LEFT_TOP;
+
+  var anchor = anychart.core.ui.LabelsFactory.anchorNoAutoNormalizer(this.mergedSettings['anchor']) || anychart.enums.Anchor.LEFT_TOP;
 
   var isVertical = this.autoVertical();
 
@@ -2175,7 +2177,8 @@ anychart.core.ui.LabelsFactory.Label.prototype.drawLabel = function(bounds, pare
   bounds.left = position.x;
   bounds.top = position.y;
 
-  this.textElement.x(/** @type {number} */(this.textX + position.x)).y(/** @type {number} */(this.textY + position.y));
+  // this.textElement.x(/** @type {number} */(this.textX + position.x)).y(/** @type {number} */(this.textY + position.y));
+  this.textElement.setPosition(/** @type {number} */(this.textX + position.x), /** @type {number} */(this.textY + position.y));
 };
 
 
@@ -2220,37 +2223,68 @@ anychart.core.ui.LabelsFactory.Label.prototype.applyTextSettings = function(text
           this.getOwnOption :
           anychart.core.ui.LabelsFactory.prototype.getOwnAndAutoOption;
 
-  textVal = target.call(this, 'text');
-  useHtml = target.call(this, 'useHtml');
+  // textVal = target.call(this, 'text');
+  // useHtml = target.call(this, 'useHtml');
+  //
+  // if (isInitial || goog.isDef(textVal) || goog.isDef(useHtml)) {
+  //   text = /** @type {string} */(textVal);
+  //   if (useHtml) {
+  //     textElement.htmlText(text);
+  //   } else {
+  //     textElement.text(text);
+  //   }
+  // }
 
-  if (isInitial || goog.isDef(textVal) || goog.isDef(useHtml)) {
-    text = /** @type {string} */(textVal);
-    if (useHtml) {
-      textElement.htmlText(text);
-    } else {
-      textElement.text(text);
-    }
+  var fields = [
+    'fontSize',
+    'fontFamily',
+    'fontColor',
+    'fontOpacity',
+    'textDirection',
+    'fontStyle',
+    'fontVariant',
+    'fontDecoration',
+    'fontWeight',
+    'letterSpacing',
+    'lineHeight',
+    'textIndent',
+    'vAlign',
+    'hAlign',
+    'textOverflow',
+    'selectable',
+    'disablePointerEvents',
+    'wordWrap',
+    'wordBreak'
+  ];
+
+  var style = {};
+
+  for (var i = 0, len = fields.length; i < len; i++) {
+    var field = fields[i];
+    style[field] = target.call(this, field);
   }
 
-  textElement.fontSize(/** @type {number|string} */ (target.call(this, 'fontSize')));
-  textElement.fontFamily(/** @type {string} */ (target.call(this, 'fontFamily')));
-  textElement.color(/** @type {string} */ (target.call(this, 'fontColor')));
-  textElement.direction(/** @type {string} */ (target.call(this, 'textDirection')));
-  textElement.wordWrap(/** @type {string} */ (target.call(this, 'wordWrap')));
-  textElement.wordBreak(/** @type {string} */ (target.call(this, 'wordBreak')));
-  textElement.opacity(/** @type {number} */ (target.call(this, 'fontOpacity')));
-  textElement.decoration(/** @type {string} */ (target.call(this, 'fontDecoration')));
-  textElement.fontStyle(/** @type {string} */ (target.call(this, 'fontStyle')));
-  textElement.fontVariant(/** @type {string} */ (target.call(this, 'fontVariant')));
-  textElement.fontWeight(/** @type {number|string} */ (target.call(this, 'fontWeight')));
-  textElement.letterSpacing(/** @type {number|string} */ (target.call(this, 'letterSpacing')));
-  textElement.lineHeight(/** @type {number|string} */ (target.call(this, 'lineHeight')));
-  textElement.textIndent(/** @type {number} */ (target.call(this, 'textIndent')));
-  textElement.vAlign(/** @type {string} */ (target.call(this, 'vAlign')));
-  textElement.hAlign(/** @type {string} */ (target.call(this, 'hAlign')));
-  textElement.textOverflow(/** @type {string} */ (target.call(this, 'textOverflow')));
-  textElement.selectable(/** @type {boolean} */ (target.call(this, 'selectable')));
-  textElement.disablePointerEvents(/** @type {boolean} */ (target.call(this, 'disablePointerEvents')));
+  textElement.style(style);
+
+  // textElement.fontSize(/** @type {number|string} */ (target.call(this, 'fontSize')));
+  // textElement.fontFamily(/** @type {string} */ (target.call(this, 'fontFamily')));
+  // textElement.color(/** @type {string} */ (target.call(this, 'fontColor')));
+  // textElement.opacity(/** @type {number} */ (target.call(this, 'fontOpacity')));
+  // textElement.direction(/** @type {string} */ (target.call(this, 'textDirection')));
+  // textElement.fontStyle(/** @type {string} */ (target.call(this, 'fontStyle')));
+  // textElement.fontVariant(/** @type {string} */ (target.call(this, 'fontVariant')));
+  // textElement.decoration(/** @type {string} */ (target.call(this, 'fontDecoration')));
+  // textElement.fontWeight(/** @type {number|string} */ (target.call(this, 'fontWeight')));
+  // textElement.letterSpacing(/** @type {number|string} */ (target.call(this, 'letterSpacing')));
+  // textElement.lineHeight(/** @type {number|string} */ (target.call(this, 'lineHeight')));
+  // textElement.textIndent(/** @type {number} */ (target.call(this, 'textIndent')));
+  // textElement.vAlign(/** @type {string} */ (target.call(this, 'vAlign')));
+  // textElement.hAlign(/** @type {string} */ (target.call(this, 'hAlign')));
+  // textElement.textOverflow(/** @type {string} */ (target.call(this, 'textOverflow')));
+  // textElement.selectable(/** @type {boolean} */ (target.call(this, 'selectable')));
+  // textElement.disablePointerEvents(/** @type {boolean} */ (target.call(this, 'disablePointerEvents')));
+  // textElement.wordWrap(/** @type {string} */ (target.call(this, 'wordWrap')));
+  // textElement.wordBreak(/** @type {string} */ (target.call(this, 'wordBreak')));
 };
 
 
@@ -2262,7 +2296,7 @@ anychart.core.ui.LabelsFactory.Label.prototype.draw = function() {
   var factory = this.factory_;
   var mergedSettings, isBackgroundEnabled;
 
-  if (!this.layer_) this.layer_ = acgraph.layer();
+  if (!this.layer_) this.layer_ = acgraph.unmanagedLayer();
   this.layer_.tag = this.index_;
 
   var enabled = this.getFinalSettings('enabled');
@@ -2361,25 +2395,27 @@ anychart.core.ui.LabelsFactory.Label.prototype.draw = function() {
       }
     }, true));
 
-    if (!this.finalParentBounds) {
-      if (factory.container()) {
-        this.finalParentBounds = factory.container().getBounds();
-      } else {
-        this.finalParentBounds = anychart.math.rect(0, 0, 0, 0);
-      }
-    }
-    if (this.finalParentBounds) {
-      parentWidth = this.finalParentBounds.width;
-      parentHeight = this.finalParentBounds.height;
-    }
+    // if (!this.finalParentBounds) {
+    //   if (factory.container()) {
+    //     this.finalParentBounds = factory.container().getBounds();
+    //   } else {
+    //     this.finalParentBounds = anychart.math.rect(0, 0, 0, 0);
+    //   }
+    // }
+    // if (this.finalParentBounds) {
+    //   parentWidth = this.finalParentBounds.width;
+    //   parentHeight = this.finalParentBounds.height;
+    // }
 
     var isHtml = this.mergedSettings['useHtml'];
 
-    this.textElement.width(null);
-    this.textElement.height(null);
+    // this.textElement.width(null);
+    // this.textElement.height(null);
 
-    if (isHtml) this.textElement.htmlText(goog.isDef(text) ? String(text) : '');
-    else this.textElement.text(goog.isDef(text) ? String(text) : '');
+    // if (isHtml) this.textElement.htmlText(goog.isDef(text) ? String(text) : '');
+    // else this.textElement.text(goog.isDef(text) ? String(text) : '');
+
+    this.textElement.text(goog.isDef(text) ? String(text) : '');
 
     this.applyTextSettings(this.textElement, true, mergedSettings);
 
@@ -2405,59 +2441,59 @@ anychart.core.ui.LabelsFactory.Label.prototype.draw = function() {
     var width, textWidth, height, textHeight;
 
     if (isWidthSet || isHeightSet) {
-      if (isWidthSet) {
-        width = Math.ceil(anychart.utils.normalizeSize(/** @type {number|string} */(mergedSettings['width']), parentWidth));
-        if (padding) {
-          textWidth = padding.tightenWidth(width);
-          this.textX = anychart.utils.normalizeSize(padding.getOption('left'), width);
-        } else {
-          this.textX = 0;
-          textWidth = width;
-        }
-        outerBounds.width = width;
-        autoWidth = false;
-      } else {
-        //we should ask text element about bounds only after text format and text settings are applied
-        textElementBounds = this.textElement.getBounds();
-        width = textElementBounds.width;
-        if (padding) {
-          outerBounds.width = padding.widenWidth(width);
-          this.textX = anychart.utils.normalizeSize(padding.getOption('left'), outerBounds.width);
-        } else {
-          this.textX = 0;
-          outerBounds.width = width;
-        }
-        autoWidth = true;
-      }
-
-      if (goog.isDef(textWidth)) this.textElement.width(textWidth);
-
-      if (isHeightSet) {
-        height = Math.ceil(anychart.utils.normalizeSize(/** @type {number|string} */(mergedSettings['height']), parentHeight));
-        if (padding) {
-          textHeight = padding.tightenHeight(height);
-          this.textY = anychart.utils.normalizeSize(padding.getOption('top'), height);
-        } else {
-          this.textY = 0;
-          textHeight = height;
-        }
-        outerBounds.height = height;
-        autoHeight = false;
-      } else {
-        //we should ask text element about bounds only after text format and text settings are applied
-        textElementBounds = this.textElement.getBounds();
-        height = textElementBounds.height;
-        if (padding) {
-          outerBounds.height = padding.widenHeight(height);
-          this.textY = anychart.utils.normalizeSize(padding.getOption('top'), outerBounds.height);
-        } else {
-          this.textY = 0;
-          outerBounds.height = height;
-        }
-        autoHeight = true;
-      }
-
-      if (goog.isDef(textHeight)) this.textElement.height(textHeight);
+      // if (isWidthSet) {
+      //   width = Math.ceil(anychart.utils.normalizeSize(/** @type {number|string} */(mergedSettings['width']), parentWidth));
+      //   if (padding) {
+      //     textWidth = padding.tightenWidth(width);
+      //     this.textX = anychart.utils.normalizeSize(padding.getOption('left'), width);
+      //   } else {
+      //     this.textX = 0;
+      //     textWidth = width;
+      //   }
+      //   outerBounds.width = width;
+      //   autoWidth = false;
+      // } else {
+      //   //we should ask text element about bounds only after text format and text settings are applied
+      //   textElementBounds = this.textElement.getBounds();
+      //   width = textElementBounds.width;
+      //   if (padding) {
+      //     outerBounds.width = padding.widenWidth(width);
+      //     this.textX = anychart.utils.normalizeSize(padding.getOption('left'), outerBounds.width);
+      //   } else {
+      //     this.textX = 0;
+      //     outerBounds.width = width;
+      //   }
+      //   autoWidth = true;
+      // }
+      //
+      // if (goog.isDef(textWidth)) this.textElement.width(textWidth);
+      //
+      // if (isHeightSet) {
+      //   height = Math.ceil(anychart.utils.normalizeSize(/** @type {number|string} */(mergedSettings['height']), parentHeight));
+      //   if (padding) {
+      //     textHeight = padding.tightenHeight(height);
+      //     this.textY = anychart.utils.normalizeSize(padding.getOption('top'), height);
+      //   } else {
+      //     this.textY = 0;
+      //     textHeight = height;
+      //   }
+      //   outerBounds.height = height;
+      //   autoHeight = false;
+      // } else {
+      //   //we should ask text element about bounds only after text format and text settings are applied
+      //   textElementBounds = this.textElement.getBounds();
+      //   height = textElementBounds.height;
+      //   if (padding) {
+      //     outerBounds.height = padding.widenHeight(height);
+      //     this.textY = anychart.utils.normalizeSize(padding.getOption('top'), outerBounds.height);
+      //   } else {
+      //     this.textY = 0;
+      //     outerBounds.height = height;
+      //   }
+      //   autoHeight = true;
+      // }
+      //
+      // if (goog.isDef(textHeight)) this.textElement.height(textHeight);
     } else {
       textElementBounds = this.textElement.getBounds();
 
@@ -2479,64 +2515,64 @@ anychart.core.ui.LabelsFactory.Label.prototype.draw = function() {
       autoHeight = true;
     }
 
-    var canAdjustByWidth = !autoWidth;
-    var canAdjustByHeight = !autoHeight;
-    var needAdjust = ((canAdjustByWidth && mergedSettings['adjustByHeight']) || (canAdjustByHeight && mergedSettings['adjustByHeight']));
+    // var canAdjustByWidth = !autoWidth;
+    // var canAdjustByHeight = !autoHeight;
+    // var needAdjust = ((canAdjustByWidth && mergedSettings['adjustByHeight']) || (canAdjustByHeight && mergedSettings['adjustByHeight']));
 
-    if (needAdjust) {
-      var calculatedFontSize;
-      if (factory.adjustFontSizeMode() == anychart.enums.AdjustFontSizeMode.DIFFERENT) {
-        calculatedFontSize = this.calculateFontSize(
-            textWidth,
-            textHeight,
-            mergedSettings['minFontSize'],
-            mergedSettings['maxFontSize'],
-            mergedSettings['adjustByWidth'],
-            mergedSettings['adjustByHeight']);
-      } else {
-        calculatedFontSize = this.iterateDrawingPlans_(function(state, settings) {
-          if (anychart.utils.instanceOf(settings, anychart.core.ui.LabelsFactory)) {
-            if (goog.isDef(settings.autoSettings['fontSize']))
-              return settings.autoSettings['fontSize'];
-          }
-        }, true);
-      }
-
-      this.suspendSignalsDispatching();
-
-      this.textElement.fontSize(/** @type {number|string} */(calculatedFontSize));
-
-      //need fix outer bounds after applying adjust font size
-      if (isWidthSet) {
-        width = Math.ceil(anychart.utils.normalizeSize(/** @type {number|string} */(mergedSettings['width']), parentWidth));
-        outerBounds.width = width;
-      } else {
-        //we should ask text element about bounds only after text format and text settings are applied
-        textElementBounds = this.textElement.getBounds();
-        width = textElementBounds.width;
-        if (padding) {
-          outerBounds.width = padding.widenWidth(width);
-        } else {
-          outerBounds.width = width;
-        }
-      }
-
-      if (isHeightSet) {
-        height = Math.ceil(anychart.utils.normalizeSize(/** @type {number|string} */(mergedSettings['height']), parentHeight));
-        outerBounds.height = height;
-      } else {
-        //we should ask text element about bounds only after text format and text settings are applied
-        textElementBounds = this.textElement.getBounds();
-        height = textElementBounds.height;
-        if (padding) {
-          outerBounds.height = padding.widenHeight(height);
-        } else {
-          outerBounds.height = height;
-        }
-      }
-
-      this.resumeSignalsDispatching(false);
-    }
+    // if (needAdjust) {
+    //   var calculatedFontSize;
+    //   if (factory.adjustFontSizeMode() == anychart.enums.AdjustFontSizeMode.DIFFERENT) {
+    //     calculatedFontSize = this.calculateFontSize(
+    //         textWidth,
+    //         textHeight,
+    //         mergedSettings['minFontSize'],
+    //         mergedSettings['maxFontSize'],
+    //         mergedSettings['adjustByWidth'],
+    //         mergedSettings['adjustByHeight']);
+    //   } else {
+    //     calculatedFontSize = this.iterateDrawingPlans_(function(state, settings) {
+    //       if (anychart.utils.instanceOf(settings, anychart.core.ui.LabelsFactory)) {
+    //         if (goog.isDef(settings.autoSettings['fontSize']))
+    //           return settings.autoSettings['fontSize'];
+    //       }
+    //     }, true);
+    //   }
+    //
+    //   this.suspendSignalsDispatching();
+    //
+    //   this.textElement.fontSize(/** @type {number|string} */(calculatedFontSize));
+    //
+    //   //need fix outer bounds after applying adjust font size
+    //   if (isWidthSet) {
+    //     width = Math.ceil(anychart.utils.normalizeSize(/** @type {number|string} */(mergedSettings['width']), parentWidth));
+    //     outerBounds.width = width;
+    //   } else {
+    //     //we should ask text element about bounds only after text format and text settings are applied
+    //     textElementBounds = this.textElement.getBounds();
+    //     width = textElementBounds.width;
+    //     if (padding) {
+    //       outerBounds.width = padding.widenWidth(width);
+    //     } else {
+    //       outerBounds.width = width;
+    //     }
+    //   }
+    //
+    //   if (isHeightSet) {
+    //     height = Math.ceil(anychart.utils.normalizeSize(/** @type {number|string} */(mergedSettings['height']), parentHeight));
+    //     outerBounds.height = height;
+    //   } else {
+    //     //we should ask text element about bounds only after text format and text settings are applied
+    //     textElementBounds = this.textElement.getBounds();
+    //     height = textElementBounds.height;
+    //     if (padding) {
+    //       outerBounds.height = padding.widenHeight(height);
+    //     } else {
+    //       outerBounds.height = height;
+    //     }
+    //   }
+    //
+    //   this.resumeSignalsDispatching(false);
+    // }
     this.bounds_ = outerBounds;
 
     this.invalidate(anychart.ConsistencyState.LABELS_FACTORY_POSITION);
@@ -2578,13 +2614,14 @@ anychart.core.ui.LabelsFactory.Label.prototype.draw = function() {
  */
 anychart.core.ui.LabelsFactory.Label.prototype.getTextElement = function() {
   if (!this.textElement) {
-    this.textElement = acgraph.text();
-    this.textElement.attr('aria-hidden', 'true');
-    this.textElement.zIndex(1);
-    if (!this.layer_) this.layer_ = acgraph.layer();
-    this.textElement.parent(this.layer_);
-    this.textElement.disablePointerEvents(true);
+    this.textElement = new anychart.core.ui.Text();
+    // this.textElement.attr('aria-hidden', 'true');
+    // this.textElement.zIndex(1);
+    if (!this.layer_) this.layer_ = acgraph.unmanagedLayer();
+    // this.textElement.parent(this.layer_);
+    // this.textElement.disablePointerEvents(true);
   }
+  this.layer_.content(this.textElement.getDomElement());
   return this.textElement;
 };
 
