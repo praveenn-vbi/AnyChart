@@ -3902,7 +3902,7 @@ anychart.pieModule.Chart.prototype.getCenterAngle_ = function(startAngle, endAng
  */
 anychart.pieModule.Chart.prototype.getCenterPoint = function() {
   anychart.core.reporting.warning(anychart.enums.WarningCode.DEPRECATED, null, ['getCenterPoint()', 'center().getPoint()'], true);
-  return this.center().getPoint();
+  return this.center_.getPoint();
 };
 
 
@@ -4635,8 +4635,8 @@ anychart.pieModule.Chart.prototype.serialize = function() {
   if (tooltip)
     json['tooltip'] = tooltip.serialize();
 
-  if (this.getCreated('center'))
-    json['center'] = this.center().serialize();
+  if (this.center_)
+    json['center'] = this.center_.serialize();
 
   anychart.core.settings.serialize(this, anychart.pieModule.Chart.PROPERTY_DESCRIPTORS, json, 'Pie');
   json['normal'] = this.normal_.serialize();

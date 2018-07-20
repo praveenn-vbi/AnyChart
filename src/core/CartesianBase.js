@@ -176,6 +176,8 @@ anychart.core.CartesianBase.prototype.xScroller = function(opt_value) {
         anychart.ConsistencyState.CARTESIAN_X_SCROLLER |
         anychart.ConsistencyState.BOUNDS,
         anychart.Signal.NEEDS_REDRAW);
+
+    this.setupCreated('xScroller', this.xScroller_);
   }
 
   if (goog.isDef(opt_value)) {
@@ -246,7 +248,7 @@ anychart.core.CartesianBase.prototype.normalizeSeriesType = function(type) {
 //----------------------------------------------------------------------------------------------------------------------
 /** @inheritDoc */
 anychart.core.CartesianBase.prototype.getBoundsWithoutAxes = function(contentAreaBounds, opt_scrollerSize) {
-  var scroller = /** @type {anychart.core.ui.ChartScroller} */(this.xScroller());
+  var scroller = /** @type {anychart.core.ui.ChartScroller} */(this.getCreated('xScroller'));
   var res = this.resetScrollerPosition(scroller, contentAreaBounds);
   return anychart.core.CartesianBase.base(this, 'getBoundsWithoutAxes', res.contentAreaBounds, res.scrollerSize);
 };
@@ -254,7 +256,7 @@ anychart.core.CartesianBase.prototype.getBoundsWithoutAxes = function(contentAre
 
 /** @inheritDoc */
 anychart.core.CartesianBase.prototype.applyScrollerOffset = function(offsets, scrollerSize) {
-  return this.applyScrollerOffsetInternal(offsets, /** @type {anychart.core.ui.ChartScroller} */(this.xScroller()), scrollerSize);
+  return this.applyScrollerOffsetInternal(offsets, /** @type {anychart.core.ui.ChartScroller} */(this.getCreated('xScroller')), scrollerSize);
 };
 
 
@@ -344,7 +346,8 @@ anychart.core.CartesianBase.prototype.applyXZoom = function() {
       var factor = 1 / (this.xZoom().getEndRatio() - start);
       (/** @type {anychart.scales.Base} */(this.xScales[i])).setZoom(factor, start);
     }
-    this.xScroller().setRangeInternal(this.xZoom().getStartRatio(), this.xZoom().getEndRatio());
+    if (this.xScroller_)
+      this.xScroller_.setRangeInternal(this.xZoom().getStartRatio(), this.xZoom().getEndRatio());
     this.markConsistent(anychart.ConsistencyState.CARTESIAN_ZOOM);
     this.invalidate(
         anychart.ConsistencyState.SCALE_CHART_Y_SCALES |
@@ -383,8 +386,8 @@ anychart.core.CartesianBase.prototype.getBoundsChangedSignal = function() {
 anychart.core.CartesianBase.prototype.drawElements = function() {
   anychart.core.CartesianBase.base(this, 'drawElements');
   if (this.hasInvalidationState(anychart.ConsistencyState.CARTESIAN_X_SCROLLER)) {
-    this.xScroller().container(this.rootElement);
-    this.xScroller().draw();
+    this.xScroller_.container(this.rootElement);
+    this.xScroller_.draw();
     this.markConsistent(anychart.ConsistencyState.CARTESIAN_X_SCROLLER);
   }
 };
@@ -451,7 +454,9 @@ anychart.core.CartesianBase.prototype.serialize = function() {
   var json = anychart.core.CartesianBase.base(this, 'serialize');
   anychart.core.settings.serialize(this, anychart.core.CartesianBase.PROPERTY_DESCRIPTORS, json);
   json['type'] = this.getType();
-  json['xScroller'] = this.xScroller().serialize();
+
+  if (this.xScroller_)
+    json['xScroller'] = this.xScroller_.serialize();
   json['xZoom'] = this.xZoom().serialize();
   return {'chart': json};
 };

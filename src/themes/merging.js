@@ -2102,5 +2102,10 @@ anychart.themes.DefaultThemes = {
   'paginator': ['defaultFontSettings'],
   'separator': ['defaultSeparator'],
   'tooltip': ['defaultFontSettings', 'defaultTooltip'],
-  'chartCredits': ['stageCredits']
+  'chartCredits': ['stageCredits'],
+  'crosshair': ['defaultFontSettings', 'defaultBackground', 'defaultCrosshairLabel'],
+  'crosshairLabel': ['defaultFontSettings', 'defaultCrosshairLabel'],
+  'scroller': ['defaultScroller'],
+  'labels': ['defaultFontSettings', 'defaultBackground', 'defaultLabelFactory', 'defaultLabelSettings'],
+  'noDataLabel': ['defaultNoDataLabel']
 };

@@ -1017,6 +1017,8 @@ anychart.core.ChartWithAxes.prototype.crosshair = function(opt_value) {
     this.crosshair_.interactivityTarget(this);
     this.crosshair_.listenSignals(this.onCrosshairSignal_, this);
     this.invalidate(anychart.ConsistencyState.AXES_CHART_CROSSHAIR, anychart.Signal.NEEDS_REDRAW);
+
+    this.setupCreated('crosshair', this.crosshair_);
   }
 
   if (goog.isDef(opt_value)) {
@@ -1462,13 +1464,14 @@ anychart.core.ChartWithAxes.prototype.drawContent = function(bounds) {
       this.leftAxisPadding_);
 
   if (this.hasInvalidationState(anychart.ConsistencyState.AXES_CHART_CROSSHAIR)) {
-    var crosshair = /** @type {anychart.core.ui.Crosshair} */(this.crosshair());
-    crosshair.suspendSignalsDispatching();
-    crosshair.parentBounds(this.dataBounds);
-    crosshair.container(this.rootElement);
-    crosshair.draw();
-    crosshair.resumeSignalsDispatching(false);
-
+    var crosshair = this.getCreated('crosshair');
+    if (crosshair) {
+      crosshair.suspendSignalsDispatching();
+      crosshair.parentBounds(this.dataBounds);
+      crosshair.container(this.rootElement);
+      crosshair.draw();
+      crosshair.resumeSignalsDispatching(false);
+    }
     this.markConsistent(anychart.ConsistencyState.AXES_CHART_CROSSHAIR);
   }
 
@@ -1705,7 +1708,9 @@ anychart.core.ChartWithAxes.prototype.serializeWithScales = function(json, scale
   this.serializeElementsWithScales(json, 'rangeAxesMarkers', this.rangeAxesMarkers_, this.serializeAxisMarker_, scales, scaleIds, axesIds);
   this.serializeElementsWithScales(json, 'textAxesMarkers', this.textAxesMarkers_, this.serializeAxisMarker_, scales, scaleIds, axesIds);
 
-  json['crosshair'] = this.crosshair().serialize();
+  var crosshair = this.getCreated('crosshair');
+  if (crosshair)
+    json['crosshair'] = crosshair.serialize();
 };
 
 

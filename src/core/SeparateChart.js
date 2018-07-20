@@ -190,26 +190,29 @@ anychart.core.SeparateChart.prototype.legendItemOut = function(item, event) {
  * @param {anychart.math.Rect} bounds .
  */
 anychart.core.SeparateChart.prototype.drawLegend = function(bounds) {
-  var legend = /** @type {anychart.core.ui.Legend} */(this.legend());
+  // var legend = /** @type {anychart.core.ui.Legend} */(this.legend());
+  var legend = this.getCreated('legend');
 
-  legend.suspendSignalsDispatching();
-  if (!legend.container() && legend.enabled())
-    legend.container(this.rootElement);
-  legend.parentBounds(bounds);
-  if (!legend.itemsSource())
-    legend.itemsSource(this);
-  legend.resumeSignalsDispatching(false);
-  legend.invalidate(anychart.ConsistencyState.APPEARANCE);
-  if (this.hasInvalidationState(anychart.ConsistencyState.CHART_LEGEND)) {
-    legend.invalidate(anychart.ConsistencyState.LEGEND_RECREATE_ITEMS);
-  }
-  legend.draw();
+  if (legend) {
+    legend.suspendSignalsDispatching();
+    if (!legend.container() && legend.enabled())
+      legend.container(this.rootElement);
+    legend.parentBounds(bounds);
+    if (!legend.itemsSource())
+      legend.itemsSource(this);
+    legend.resumeSignalsDispatching(false);
+    legend.invalidate(anychart.ConsistencyState.APPEARANCE);
+    if (this.hasInvalidationState(anychart.ConsistencyState.CHART_LEGEND)) {
+      legend.invalidate(anychart.ConsistencyState.LEGEND_RECREATE_ITEMS);
+    }
+    legend.draw();
 
-  // DVF-1518
-  var legendBounds = legend.getRemainingBounds();
-  if (!goog.math.Rect.equals(this.legendBoundsCache_, legendBounds)) {
-    this.legendBoundsCache_ = legendBounds;
-    this.invalidate(anychart.ConsistencyState.BOUNDS);
+    // DVF-1518
+    var legendBounds = legend.getRemainingBounds();
+    if (!goog.math.Rect.equals(this.legendBoundsCache_, legendBounds)) {
+      this.legendBoundsCache_ = legendBounds;
+      this.invalidate(anychart.ConsistencyState.BOUNDS);
+    }
   }
 
   this.markConsistent(anychart.ConsistencyState.CHART_LEGEND);
@@ -266,8 +269,9 @@ anychart.core.SeparateChart.prototype.needsInteractiveLegendUpdate = function() 
 /** @inheritDoc */
 anychart.core.SeparateChart.prototype.serialize = function() {
   var json = anychart.core.SeparateChart.base(this, 'serialize');
-  if (this.getCreated('legend'))
-    json['legend'] = this.legend().serialize();
+  var legend = this.getCreated('legend');
+  if (legend)
+    json['legend'] = legend.serialize();
 
   if (this.getCreated('interactivity'))
     json['interactivity'] = this.interactivity().serialize();

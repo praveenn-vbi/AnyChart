@@ -27,6 +27,9 @@ goog.require('anychart.core.ui.LabelBase');
  */
 anychart.core.ui.Label = function() {
   anychart.core.ui.Label.base(this, 'constructor');
+
+  this.addThemes(anychart.themes.DefaultThemes['noDataLabel']);
+
   anychart.core.settings.createDescriptorsMeta(this.descriptorsMeta, [
     ['visible', anychart.ConsistencyState.LABEL_VISIBILITY, anychart.Signal.NEEDS_REDRAW]
   ]);

@@ -18,6 +18,8 @@ goog.require('goog.array');
 anychart.core.ui.Crosshair = function() {
   anychart.core.ui.Crosshair.base(this, 'constructor');
 
+  this.addThemes(anychart.themes.DefaultThemes['crosshair']);
+
   /**
    * @type {anychart.core.ChartWithAxes|anychart.mapModule.Chart|anychart.stockModule.Chart|anychart.stockModule.Plot}
    * @private
@@ -397,6 +399,8 @@ anychart.core.ui.Crosshair.prototype.xLabel = function(opt_indexOrValue, opt_val
     this.propagateParentalRelationship(label, index, true);
     label.listenSignals(this.labelInvalidated, this);
     label.setAutoZIndex(/** @type {number} */(this.zIndex()));
+
+    this.setupCreated('xLabel', label);
   }
   if (goog.isDef(value)) {
     label.setup(value);
@@ -430,6 +434,8 @@ anychart.core.ui.Crosshair.prototype.yLabel = function(opt_indexOrValue, opt_val
     this.propagateParentalRelationship(label, index, false);
     label.listenSignals(this.labelInvalidated, this);
     label.setAutoZIndex(/** @type {number} */(this.zIndex()));
+
+    this.setupCreated('yLabel', label);
   }
   if (goog.isDef(value)) {
     label.setup(value);

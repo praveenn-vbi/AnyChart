@@ -324,6 +324,8 @@ anychart.core.Axis.prototype.labels = function(opt_value) {
     this.labels_.setParentEventTarget(this);
     this.labels_.listenSignals(this.labelsInvalidated_, this);
     this.registerDisposable(this.labels_);
+
+    this.setupCreated('labels', this.labels_);
   }
 
   if (goog.isDef(opt_value)) {
@@ -351,7 +353,8 @@ anychart.core.Axis.prototype.labelsInvalidated_ = function(event) {
     state = anychart.ConsistencyState.AXIS_LABELS | anychart.ConsistencyState.AXIS_TICKS;
     signal = anychart.Signal.NEEDS_REDRAW;
   }
-  this.labels().clear();
+  if (this.labels_)
+    this.labels_.clear();
   this.dropStaggeredLabelsCache_();
   this.dropOverlappedLabelsCache_();
   this.dropBoundsCache();
@@ -372,6 +375,8 @@ anychart.core.Axis.prototype.minorLabels = function(opt_value) {
     this.isHorizontal() ? this.minorLabels_['rotation'](0) : this.minorLabels_['rotation'](-90);
     this.minorLabels_.listenSignals(this.minorLabelsInvalidated_, this);
     this.registerDisposable(this.minorLabels_);
+
+    this.setupCreated('minorLabels', this.minorLabels_);
   }
 
   if (goog.isDef(opt_value)) {
@@ -401,7 +406,8 @@ anychart.core.Axis.prototype.minorLabelsInvalidated_ = function(event) {
   }
   this.dropOverlappedLabelsCache_();
   this.dropBoundsCache();
-  this.minorLabels().clear();
+  if (this.minorLabels_)
+    this.minorLabels_.clear();
   this.invalidate(state, signal);
 };
 
@@ -566,8 +572,10 @@ anychart.core.Axis.prototype.scale = function(opt_value) {
         this.dropStaggeredLabelsCache_();
         this.dropOverlappedLabelsCache_();
         this.dropBoundsCache();
-        this.labels().clear();
-        this.minorLabels().clear();
+        if (this.labels_)
+          this.labels_.clear();
+        if (this.minorLabels_)
+          this.minorLabels_.clear();
         val.resumeSignalsDispatching(dispatch);
         if (!dispatch)
           this.invalidate(this.ALL_VISUAL_STATES, anychart.Signal.NEEDS_REDRAW | anychart.Signal.BOUNDS_CHANGED);
@@ -599,8 +607,10 @@ anychart.core.Axis.prototype.scaleInvalidated = function(event) {
     this.dropStaggeredLabelsCache_();
     this.dropOverlappedLabelsCache_();
     this.dropBoundsCache();
-    this.labels().clear();
-    this.minorLabels().clear();
+    if (this.labels_)
+      this.labels_.clear();
+    if (this.minorLabels_)
+      this.minorLabels_.clear();
     this.invalidate(this.ALL_VISUAL_STATES, anychart.Signal.NEEDS_REDRAW | anychart.Signal.BOUNDS_CHANGED);
   }
 };
@@ -841,7 +851,7 @@ anychart.core.Axis.prototype.getOverlappedLabels_ = function(opt_bounds) {
         var tickVal, ratio, bounds1, bounds2, bounds3, bounds4;
         var tempRatio;
         var k = -1;
-        var labels = /** @type {anychart.core.ui.LabelsFactory} */(this.labels());
+        var labels = /** @type {anychart.core.ui.LabelsFactory} */(this.getCreated('labels'));
         var labelsPosition = /** @type {anychart.enums.SidePosition} */(labels.getOption('position'));
         var isLabels = labels.enabled();
         var insideLabelSpace = this.insideBounds_ && anychart.utils.sidePositionToNumber(labelsPosition) < 0  ?
@@ -854,7 +864,7 @@ anychart.core.Axis.prototype.getOverlappedLabels_ = function(opt_bounds) {
           j = 0;
           var minorTicksArrLen = scaleMinorTicksArr.length;
           var minorTickVal, minorRatio;
-          var minorLabels = /** @type {anychart.core.ui.LabelsFactory} */(this.minorLabels());
+          var minorLabels = /** @type {anychart.core.ui.LabelsFactory} */(this.getCreated('minorLabels'));
           var isMinorLabels = minorLabels.enabled();
 
           while (i < ticksArrLen || j < minorTicksArrLen) {
@@ -923,7 +933,9 @@ anychart.core.Axis.prototype.getOverlappedLabels_ = function(opt_bounds) {
                 if (prevDrawableMinorLabel != -1)
                   bounds4 = this.getLabelBounds_(prevDrawableMinorLabel, false, scaleMinorTicksArr, opt_bounds);
 
-                var label = this.minorLabels().getLabel(j);
+                if (this.getCreated('minorLabels')) {
+                  var label = this.getCreated('minorLabels').getLabel(j);
+                }
                 var isLabelEnabled = label ?
                     goog.isDef(label.enabled()) ?
                         label.enabled() :
@@ -1026,7 +1038,7 @@ anychart.core.Axis.prototype.getOverlappedLabels_ = function(opt_bounds) {
  */
 anychart.core.Axis.prototype.applyStaggerMode_ = function(opt_bounds) {
   if (!this.staggeredLabels_) {
-    var labels = /** @type {anychart.core.ui.LabelsFactory} */(this.labels());
+    var labels = /** @type {anychart.core.ui.LabelsFactory} */(this.getCreated('labels'));
 
     var scale = /** @type {anychart.scales.ScatterBase|anychart.scales.Ordinal} */(this.scale());
     if (!(scale && labels.enabled()))
@@ -1202,7 +1214,7 @@ anychart.core.Axis.prototype.getLabelBounds_ = function(index, isMajor, ticksArr
   var stroke = this.stroke();
   var lineThickness = !stroke || anychart.utils.isNone(stroke) ? 0 : stroke['thickness'] ? parseFloat(this.stroke()['thickness']) : 1;
 
-  var labels = isMajor ? this.labels() : this.minorLabels();
+  var labels = isMajor ? this.getCreated('labels') : this.getCreated('minorLabels');
 
   var x, y;
   var scale = /** @type {anychart.scales.ScatterBase|anychart.scales.Ordinal} */(this.scale());
@@ -1297,8 +1309,8 @@ anychart.core.Axis.prototype.calcSize = function(maxLabelSize, maxMinorLabelSize
 
   var sumTicksAndLabelsSizes = 0, sumMinorTicksAndLabelsSizes = 0;
 
-  var labelsPosition = /** @type {anychart.enums.SidePosition} */(this.labels().getOption('position'));
-  var minorLabelsPosition = /** @type {anychart.enums.SidePosition} */(this.minorLabels().getOption('position'));
+  var labelsPosition = /** @type {anychart.enums.SidePosition} */(this.getCreated('labels').getOption('position'));
+  var minorLabelsPosition = /** @type {anychart.enums.SidePosition} */(this.getCreated('minorLabels').getOption('position'));
   var ticksPosition = /** @type {anychart.enums.SidePosition} */(ticks.getOption('position'));
   var minorTicksPosition = /** @type {anychart.enums.SidePosition} */(minorTicks.getOption('position'));
 
@@ -1369,8 +1381,8 @@ anychart.core.Axis.prototype.getSize = function(parentBounds, length, opt_includ
 
   // var title = this.title();
   var title = this.getCreated('title');
-  var labels = this.labels();
-  var minorLabels = this.minorLabels();
+  var labels = this.getCreated('labels');
+  var minorLabels = this.getCreated('minorLabels');
   var orientation = /** @type {anychart.enums.Orientation} */(this.orientation());
 
   if (title && title.enabled()) {
@@ -1768,10 +1780,10 @@ anychart.core.Axis.prototype.drawLabel_ = function(value, ratio, index, pixelShi
   var labels, ticks;
   if (isMajor) {
     ticks = /** @type {!anychart.core.AxisTicks} */(this.ticks());
-    labels = this.labels();
+    labels = this.getCreated('labels');
   } else {
     ticks = /** @type {!anychart.core.AxisTicks} */(this.minorTicks());
-    labels = this.minorLabels();
+    labels = this.getCreated('minorLabels');
   }
 
   if (!enabled) {
@@ -1853,8 +1865,10 @@ anychart.core.Axis.prototype.checkDrawingNeeded = function() {
         title.invalidate(anychart.ConsistencyState.CONTAINER);
       this.ticks().invalidate(anychart.ConsistencyState.CONTAINER);
       this.minorTicks().invalidate(anychart.ConsistencyState.CONTAINER);
-      this.labels().invalidate(anychart.ConsistencyState.CONTAINER);
-      this.minorLabels().invalidate(anychart.ConsistencyState.CONTAINER);
+      if (this.labels_)
+        this.labels_.invalidate(anychart.ConsistencyState.CONTAINER);
+      if (this.minorLabels_)
+        this.minorLabels_.invalidate(anychart.ConsistencyState.CONTAINER);
       this.invalidate(
           anychart.ConsistencyState.CONTAINER |
           anychart.ConsistencyState.AXIS_TITLE |
@@ -1891,12 +1905,15 @@ anychart.core.Axis.prototype.draw = function() {
   var axisTicks = /** @type {anychart.core.AxisTicks} */(this.ticks());
   var axisMinorTicks = /** @type {anychart.core.AxisTicks} */(this.minorTicks());
 
-  // this.title().suspendSignalsDispatching();
   var title = this.getCreated('title');
   if (title)
     title.suspendSignalsDispatching();
-  this.labels().suspendSignalsDispatching();
-  this.minorLabels().suspendSignalsDispatching();
+  var labels = this.getCreated('labels');
+  if (labels)
+    labels.suspendSignalsDispatching();
+  var minorLabels = this.getCreated('minorLabels');
+  if (minorLabels)
+    minorLabels.suspendSignalsDispatching();
   axisTicks.suspendSignalsDispatching();
   axisMinorTicks.suspendSignalsDispatching();
 
@@ -1914,8 +1931,10 @@ anychart.core.Axis.prototype.draw = function() {
     this.line.zIndex(zIndex);
     axisTicks.zIndex(zIndex);
     axisMinorTicks.zIndex(zIndex);
-    this.labels().zIndex(zIndex);
-    this.minorLabels().zIndex(zIndex);
+    if (labels)
+      labels.zIndex(zIndex);
+    if (minorLabels)
+      minorLabels.zIndex(zIndex);
     this.markConsistent(anychart.ConsistencyState.Z_INDEX);
   }
 
@@ -1929,8 +1948,10 @@ anychart.core.Axis.prototype.draw = function() {
     axisTicks.container(container);
     axisMinorTicks.container(container);
 
-    this.labels().container(container);
-    this.minorLabels().container(container);
+    if (labels)
+      labels.container(container);
+    if (minorLabels)
+      minorLabels.container(container);
     this.markConsistent(anychart.ConsistencyState.CONTAINER);
   }
 
@@ -1960,13 +1981,11 @@ anychart.core.Axis.prototype.draw = function() {
   }
 
   if (this.hasInvalidationState(anychart.ConsistencyState.AXIS_LABELS)) {
-    var labels = this.labels();
-    if (!labels.container()) labels.container(/** @type {acgraph.vector.ILayer} */(this.container()));
+    if (labels && !labels.container()) labels.container(/** @type {acgraph.vector.ILayer} */(this.container()));
     labels.parentBounds(/** @type {anychart.math.Rect} */(this.parentBounds()));
     // labels.clear();
 
-    var minorLabels = this.minorLabels();
-    if (!minorLabels.container()) minorLabels.container(/** @type {acgraph.vector.ILayer} */(this.container()));
+    if (minorLabels && !minorLabels.container()) minorLabels.container(/** @type {acgraph.vector.ILayer} */(this.container()));
     minorLabels.parentBounds(/** @type {anychart.math.Rect} */(this.parentBounds()));
     // minorLabels.clear();
 
@@ -2061,7 +2080,7 @@ anychart.core.Axis.prototype.draw = function() {
           j++;
         }
       }
-      if (needDrawMinorLabels) this.minorLabels().draw();
+      if (needDrawMinorLabels) this.minorLabels_.draw();
 
     } else {
       var labelsStates = this.calcLabels_();
@@ -2117,15 +2136,15 @@ anychart.core.Axis.prototype.draw = function() {
       }
     }
 
-    this.labels().draw();
+    this.labels_.draw();
   }
 
   // this.title().resumeSignalsDispatching(false);
   title = this.getCreated('title');
   if (title)
     title.resumeSignalsDispatching(false);
-  this.labels().resumeSignalsDispatching(false);
-  this.minorLabels().resumeSignalsDispatching(false);
+  this.labels_.resumeSignalsDispatching(false);
+  this.minorLabels_.resumeSignalsDispatching(false);
   axisTicks.resumeSignalsDispatching(false);
   axisMinorTicks.resumeSignalsDispatching(false);
 
@@ -2330,8 +2349,10 @@ anychart.core.Axis.prototype.hasIntersectionLabelsSpace = function(insideLabelSp
  * @return {boolean}
  */
 anychart.core.Axis.prototype.hasInsideElements = function() {
-  return ((this.labels().enabled() ? anychart.utils.sidePositionToNumber(/** @type {anychart.enums.SidePosition} */(this.labels().getOption('position'))) : 1) +
-      (this.minorLabels().enabled() ? anychart.utils.sidePositionToNumber(/** @type {anychart.enums.SidePosition} */(this.minorLabels().getOption('position'))) : 1) +
+  var labels = this.getCreated('labels');
+  var minorLabels = this.getCreated('minorLabels');
+  return ((labels.enabled() ? anychart.utils.sidePositionToNumber(/** @type {anychart.enums.SidePosition} */(labels.getOption('position'))) : 1) +
+      (minorLabels.enabled() ? anychart.utils.sidePositionToNumber(/** @type {anychart.enums.SidePosition} */(minorLabels.getOption('position'))) : 1) +
       (this.ticks().enabled() ? anychart.utils.sidePositionToNumber(/** @type {anychart.enums.SidePosition} */(this.ticks().getOption('position'))) : 1) +
       (this.minorTicks().enabled() ? anychart.utils.sidePositionToNumber(/** @type {anychart.enums.SidePosition} */(this.minorTicks().getOption('position'))) : 1)) != 4;
 };
@@ -2346,8 +2367,10 @@ anychart.core.Axis.prototype.serialize = function() {
   if (this.getCreated('title'))
     json['title'] = this.title().serialize();
 
-  json['labels'] = this.labels().serialize();
-  json['minorLabels'] = this.minorLabels().serialize();
+  if (this.labels_)
+    json['labels'] = this.labels_.serialize();
+  if (this.minorLabels_)
+    json['minorLabels'] = this.minorLabels_.serialize();
   json['ticks'] = this.ticks().serialize();
   json['minorTicks'] = this.minorTicks().serialize();
   json['stroke'] = anychart.color.serialize(/** @type {acgraph.vector.Stroke} */(this.stroke()));

@@ -14,6 +14,8 @@ goog.require('goog.math.Coordinate');
 anychart.core.ui.CrosshairLabel = function() {
   anychart.core.ui.CrosshairLabel.base(this, 'constructor');
 
+  this.addThemes(anychart.themes.DefaultThemes['crosshairLabel']);
+
   /**
    * @type {number}
    * @private

@@ -1631,7 +1631,9 @@ anychart.core.ui.Legend.prototype.distributeItemsInBounds_ = function(width, hei
     }
   }
 
-  this.paginator().pageCount(page + 1);
+  var paginator = this.getCreated('paginator');
+  if (paginator)
+    paginator.pageCount(page + 1);
 };
 
 
@@ -1936,8 +1938,8 @@ anychart.core.ui.Legend.prototype.draw = function() {
 
   var boundsWithoutSeparator = this.titleSeparator_ ? this.titleSeparator_.getRemainingBounds() : boundsWithoutTitle;
 
+  var paginator = this.getCreated('paginator');
   if (this.hasInvalidationState(anychart.ConsistencyState.LEGEND_PAGINATOR)) {
-    var paginator = this.getCreated('paginator');
     if (paginator) {
       paginator.suspendSignalsDispatching();
       paginator.parentBounds(boundsWithoutSeparator);
@@ -1948,9 +1950,9 @@ anychart.core.ui.Legend.prototype.draw = function() {
     this.markConsistent(anychart.ConsistencyState.LEGEND_PAGINATOR);
   }
 
-  var contentBounds = this.paginator().getFinalEnabled() ? this.paginator().getRemainingBounds() : boundsWithoutSeparator;
+  var contentBounds = paginator.getFinalEnabled() ? paginator.getRemainingBounds() : boundsWithoutSeparator;
 
-  var pageToDraw = this.paginator().getFinalEnabled() ? this.paginator().currentPage() - 1 : 0;
+  var pageToDraw = paginator.getFinalEnabled() ? paginator.currentPage() - 1 : 0;
 
   contentBounds.width = Math.max(1, contentBounds.width);
   contentBounds.height = Math.max(1, contentBounds.height);
@@ -2362,11 +2364,11 @@ anychart.core.ui.Legend.prototype.serialize = function() {
   if (this.getCreated('title'))
     json['title'] = this.title().serialize();
 
-  if (this.getCreated('titleSeparator'))
-    json['titleSeparator'] = this.titleSeparator().serialize();
+  if (this.titleSeparator_)
+    json['titleSeparator'] = this.titleSeparator_.serialize();
 
-  if (this.getCreated('paginator'))
-    json['paginator'] = this.paginator().serialize();
+  if (this.paginator_)
+    json['paginator'] = this.paginator_.serialize();
 
   if (this.getCreated('tooltip'))
     json['tooltip'] = this.tooltip().serialize();

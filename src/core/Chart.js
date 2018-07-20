@@ -370,7 +370,7 @@ anychart.core.Chart.prototype.createStage = function() {
   var stage = acgraph.create();
   stage.allowCreditsDisabling = this.allowCreditsDisabling;
 
-  stage.credits(this.getCreated('chartCredits').serializeDiff());
+  stage.credits(this.getCreated('credits').serializeDiff());
   return stage;
 };
 
@@ -1334,7 +1334,7 @@ anychart.core.Chart.prototype.credits = function(opt_value) {
     this.registerDisposable(this.credits_);
     this.credits_.listenSignals(this.onCreditsSignal_, this);
 
-    this.setupCreated('chartCredits', this.credits_);
+    this.setupCreated('credits', this.credits_);
   }
 
   if (goog.isDef(opt_value)) {
@@ -1535,7 +1535,7 @@ anychart.core.Chart.prototype.drawCredits = function(parentBounds) {
     return /** @type {!anychart.math.Rect} */(parentBounds);
 
   var stageCredits = stage.credits();
-  var chartCredits = this.getCreated('chartCredits');
+  var chartCredits = this.getCreated('credits');
 
   stageCredits.setup(chartCredits.serializeDiff());
   if (chartCredits)
@@ -1965,8 +1965,9 @@ anychart.core.Chart.prototype.getDefaultThemeObj = function() {
 anychart.core.Chart.prototype.serialize = function() {
   var json = anychart.core.Chart.base(this, 'serialize');
 
-  if (this.getCreated('title'))
-    json['title'] = this.title().serialize();
+  var title = this.getCreated('title');
+  if (title)
+    json['title'] = title.serialize();
 
   if (this.getCreated('background'))
     json['background'] = this.background().serialize();
