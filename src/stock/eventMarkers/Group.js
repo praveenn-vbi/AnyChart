@@ -108,7 +108,8 @@ anychart.stockModule.eventMarkers.Group.OWN_DESCRIPTORS = (function() {
     anychart.core.settings.descriptors.DIRECTION,
     anychart.core.settings.descriptors.POSITION,
     anychart.core.settings.descriptors.SERIES_ID,
-    anychart.core.settings.descriptors.FIELD_NAME
+    anychart.core.settings.descriptors.FIELD_NAME,
+    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'stickToNearestRight', anychart.core.settings.booleanNormalizer]
   ]);
   return map;
 })();
@@ -130,6 +131,9 @@ anychart.stockModule.eventMarkers.Group.OWN_DESCRIPTORS_META = ([
     anychart.ConsistencyState.EVENT_MARKERS_DATA,
     anychart.Signal.NEEDS_REDRAW],
   ['fieldName',
+    anychart.ConsistencyState.EVENT_MARKERS_DATA,
+    anychart.Signal.NEEDS_REDRAW],
+  ['stickToNearestRight',
     anychart.ConsistencyState.EVENT_MARKERS_DATA,
     anychart.Signal.NEEDS_REDRAW]
 ]);
@@ -772,13 +776,22 @@ anychart.stockModule.eventMarkers.Group.prototype.getAutoHatchFill = function() 
 
 
 /**
+ * @param {boolean=} opt_unmodified return iterator to unmodified (not sticked to closest values) data
  * @return {!anychart.stockModule.eventMarkers.Table.Iterator}
  */
-anychart.stockModule.eventMarkers.Group.prototype.getIterator = function() {
-  if (!this.iterator_) {
-    this.iterator_ = this.getDetachedIterator();
+anychart.stockModule.eventMarkers.Group.prototype.getIterator = function(opt_unmodified) {
+  if (!goog.isDef(opt_unmodified) || !opt_unmodified)
+  {
+    if (!this.iterator_) {
+      this.iterator_ = this.getDetachedIterator();
+    }
+    return this.iterator_;
+  } else {
+    if (!this.iteratorUnmodified_){
+      this.iteratorUnmodified_ = this.dataTable_.getIteratorUnmodified();
+    }
+    return this.iteratorUnmodified_;
   }
-  return this.iterator_;
 };
 
 

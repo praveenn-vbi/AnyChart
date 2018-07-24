@@ -118,6 +118,27 @@ anychart.stockModule.eventMarkers.Table.prototype.getData = function() {
 
 
 /**
+ * @return {anychart.stockModule.eventMarkers.Table.Iterator}
+ */
+anychart.stockModule.eventMarkers.Table.prototype.getIteratorUnmodified = function() {
+  var data = [];
+  var lookups = [];
+  var firstIndex = 0;
+  var count = this.data_.length;
+  for (var i = 0; i < this.data_.length; i++) {
+    lookups.push(i);
+    data.push({
+      key: this.data_[i].key,
+      index: i,
+      items: [this.data_[i]],
+      emIndex: i
+    });
+  }
+  return new anychart.stockModule.eventMarkers.Table.Iterator(data, lookups, firstIndex, count);
+};
+
+
+/**
  * Returns a new iterator for passed range of keys and a coIterator for a keys grid.
  * @param {anychart.stockModule.data.TableIterator.ICoIterator} coIterator
  * @param {number} fromOrNaNForFull
