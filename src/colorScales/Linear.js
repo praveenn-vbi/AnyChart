@@ -62,7 +62,8 @@ anychart.colorScalesModule.Linear.prototype.extractKeys_ = function(var_args) {
     if (goog.isString(arg)) {
       keys.push(acgraph.vector.parseColor(arg, true));
     } else if (goog.isArray(arg)) {
-      keys.push.apply(keys, this.extractKeys_.apply(this, arg));
+      var gradient = acgraph.vector.normalizeFill(arg);
+      keys.push.apply(keys, this.extractKeys_.apply(this, gradient['keys']));
     } else if (goog.isObject(arg)) {
       var keysAttr = arg['keys'];
       if (goog.isDef(keysAttr) && goog.isArray(keysAttr)) {
