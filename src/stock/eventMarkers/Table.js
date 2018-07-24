@@ -144,20 +144,22 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
     firstIndex = this.lastDataCache_.firstIndex || 0;
     count = this.lastDataCache_.count || 0;
   } else {
-    //if (keepValue) {
-    //  data = [];
-    //  lookups = [];
-    //  firstIndex = 0;
-    //  count = this.data_.length;
-    //  for (var i = 0; i < this.data_.length; i++) {
-    //    data.push({
-    //      key: this.data_[i].key,
-    //      index: i,
-    //      items: this.data_[i]
-    //    });
-    //  }
-    //}
-    //else {
+    if (keepValue) {
+      data = [];
+      lookups = [];
+      firstIndex = 0;
+      count = this.data_.length;
+      for (var i = 0; i < this.data_.length; i++) {
+        lookups.push(i);
+        data.push({
+          key: this.data_[i].key,
+          index: i,
+          items: [this.data_[i]],
+          emIndex: i
+        });
+      }
+    }
+    else {
 
       data = [];
       lookups = [];
@@ -228,7 +230,7 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
         count: count,
         pointsCount: coIterator.getRowsCount()
       };
-    //}
+    }
   }
   return new anychart.stockModule.eventMarkers.Table.Iterator(data, lookups, firstIndex, count);
 };
