@@ -14,6 +14,7 @@ goog.require('goog.array');
  */
 anychart.stockModule.eventMarkers.Table = function() {
   this.data_ = [];
+  this.keepValues_ = false;
   this.dataReducer_ = goog.bind(this.dataReducer_, this);
 };
 
@@ -125,7 +126,7 @@ anychart.stockModule.eventMarkers.Table.prototype.getData = function() {
  */
 anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coIterator, fromOrNaNForFull, toOrNaNForFull) {
   //debugger;
-  var keepValue = true;
+  var keepValue = this.keepValues_;
   var fromIndex, toIndex;
   var full = isNaN(fromOrNaNForFull) || isNaN(toOrNaNForFull);
   if (full) {

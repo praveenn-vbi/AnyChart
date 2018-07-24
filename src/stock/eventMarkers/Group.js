@@ -24,6 +24,12 @@ anychart.stockModule.eventMarkers.Group = function(plot, index) {
   anychart.stockModule.eventMarkers.Group.base(this, 'constructor');
 
   /**
+   * @type {boolean}
+   * @private
+   */
+  this.stick_ = true;
+
+  /**
    * Stock plot reference.
    * @type {anychart.stockModule.Plot}
    */
@@ -128,6 +134,16 @@ anychart.stockModule.eventMarkers.Group.OWN_DESCRIPTORS_META = ([
     anychart.Signal.NEEDS_REDRAW]
 ]);
 
+
+/**
+ * @param opt_value
+ */
+anychart.stockModule.eventMarkers.Group.prototype.stick = function(opt_value) {
+  if (goog.isDef(opt_value) && this.stick_ != opt_value)
+    this.stick_ = opt_value;
+  else
+    return this.stick_;
+};
 
 /**
  * @const {!Array.<Array>}
@@ -319,6 +335,7 @@ anychart.stockModule.eventMarkers.Group.prototype.data = function(opt_value) {
     if (!goog.isArray(data))
       data = [];
     this.dataTable_.setData(data, dateTimePattern, timeOffset, baseDate, locale);
+    this.dataTable_.keepValues_ = !this.stick_;
     this.invalidate(anychart.ConsistencyState.EVENT_MARKERS_DATA, anychart.Signal.NEEDS_REDRAW);
     return this;
   }
@@ -529,7 +546,7 @@ anychart.stockModule.eventMarkers.Group.prototype.drawEventMarker = function(opt
   var directionIsUp = direction != anychart.enums.EventMarkerDirection.DOWN;
   hash = this.getPositionHash_(position, seriesId, fieldName, directionIsUp);
   iterator.meta('positionHash', hash);
-  var x = Math.round(xScale.transformInternal(iterator.getX(), iterator.getPointIndex(), 0.5) * this.pixelBoundsCache.width + this.pixelBoundsCache.left);
+  var x = Math.round((xScale.transform(iterator.getX(), 0.5)) * this.pixelBoundsCache.width + this.pixelBoundsCache.left);
   offset = (opt_offsets ? opt_offsets[hash] : Number(iterator.meta('offset'))) || 0;
   iterator.meta('offset', offset);
   var connectorLen = 0;
