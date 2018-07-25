@@ -2145,6 +2145,8 @@ anychart.core.ui.LabelsFactory.Label.prototype.drawLabel = function(bounds, pare
   var formattedPosition = goog.object.clone(positionFormatter.call(positionProvider, positionProvider));
   var position = new goog.math.Coordinate(formattedPosition['x'], formattedPosition['y']);
 
+  this.container().pie(position.x, position.y, 2, 0, 360).fill('red').stroke('black').zIndex(1000);
+
   var connectorPoint = positionProvider && positionProvider['connectorPoint'];
   if (this.connector) {
     this.connector.clear();
@@ -2165,6 +2167,9 @@ anychart.core.ui.LabelsFactory.Label.prototype.drawLabel = function(bounds, pare
 
   position.x -= anchorCoordinate.x;
   position.y -= anchorCoordinate.y;
+
+  this.container().rect().setBounds(new anychart.math.rect(position.x, position.y, bounds.width, bounds.height))
+      .fill('none').stroke('red').zIndex(1000);
 
   var offsetXNormalized = goog.isDef(offsetX) ? anychart.utils.normalizeSize(/** @type {number|string} */(offsetX), parentWidth) : 0;
   var offsetYNormalized = goog.isDef(offsetY) ? anychart.utils.normalizeSize(/** @type {number|string} */(offsetY), parentHeight) : 0;
@@ -2428,12 +2433,14 @@ anychart.core.ui.LabelsFactory.Label.prototype.draw = function() {
     //calculate text width and outer width
 
     var padding;
-    // if (anychart.utils.instanceOf(mergedSettings['padding'], anychart.core.utils.Padding)) {
-    //   padding = mergedSettings['padding'];
-    // } else if (goog.isObject(mergedSettings['padding']) || goog.isNumber(mergedSettings['padding']) || goog.isString(mergedSettings['padding'])) {
-    //   padding = new anychart.core.utils.Padding();
-    //   padding.setup(mergedSettings['padding']);
-    // }
+    if (anychart.utils.instanceOf(mergedSettings['padding'], anychart.core.utils.Padding)) {
+      padding = mergedSettings['padding'];
+    } else if (goog.isObject(mergedSettings['padding']) || goog.isNumber(mergedSettings['padding']) || goog.isString(mergedSettings['padding'])) {
+      padding = new anychart.core.utils.Padding();
+      padding.setup(mergedSettings['padding']);
+    }
+
+    // console.log(padding);
 
     var autoWidth, autoHeight;
     var textElementBounds;

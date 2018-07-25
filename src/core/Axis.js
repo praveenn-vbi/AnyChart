@@ -1238,9 +1238,12 @@ anychart.core.Axis.prototype.getLabel = function(index, isMajor, ticksArray, opt
     var positionProvider = {'value': {'x': x, 'y': y}};
 
     label = labels.add(formatProvider, positionProvider, index);
-    var settings = {};
-    goog.object.extend(settings, labels.themeSettings, labels.ownSettings, label.ownSettings);
-    label.stateOrder([settings]);
+    // var settings = {};
+    // goog.object.extend(settings, labels.themeSettings, labels.ownSettings, label.ownSettings);
+    // console.log(labels.themeSettings, labels.ownSettings, label.ownSettings);
+
+    // label.stateOrder([settings]);
+    label.stateOrder([label.ownSettings, labels.ownSettings, labels.themeSettings]);
 
     var mergedSettings = label.getMergedSettings();
     var text = labels.callFormat(mergedSettings['format'], formatProvider, index);
@@ -1250,7 +1253,7 @@ anychart.core.Axis.prototype.getLabel = function(index, isMajor, ticksArray, opt
     label.applyTextSettings(textEl, true, mergedSettings);
     textEl.applySettings();
     var measurementNode = acgraph.getRenderer().createMeasurement();
-    textEl.setPosition(x, y);
+    // textEl.setPosition(x, y);
     textEl.renderTo(measurementNode);
 
 
@@ -1396,6 +1399,9 @@ anychart.core.Axis.prototype.getLabelBounds_ = function(index, isMajor, ticksArr
   // var labelBounds = new goog.math.Rect(bbox.x, bbox.y, bbox.width, bbox.height);
 
   var labelBounds = textEl.getBounds();
+
+  labelBounds.left = x;
+  labelBounds.top = y;
 
   // console.log(labelBounds);
   // var label = this.labelsArr_[index];

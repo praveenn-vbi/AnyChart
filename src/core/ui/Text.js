@@ -8,6 +8,7 @@ anychart.core.ui.Text = function() {
   this.renderer = acgraph.getRenderer();
   this.text_ = '';
   this.style_ = {};
+  this.baseLine = 0;
 };
 
 
@@ -33,8 +34,11 @@ anychart.core.ui.Text.prototype.renderTo = function(element) {
 
 anychart.core.ui.Text.prototype.setPosition = function(x, y) {
   var dom = this.getDomElement();
-  dom.setAttribute('x', x);
-  dom.setAttribute('y', y);
+
+  if (goog.isDef(x))
+    dom.setAttribute('x', x);
+  if (goog.isDef(y))
+    dom.setAttribute('y', y + this.baseLine);
 };
 
 
@@ -98,7 +102,9 @@ anychart.core.ui.Text.prototype.getBounds = function() {
   if (!this.bounds_) {
     var dom = this.getDomElement();
     var bbox = dom['getBBox']();
-    this.bounds_ = new goog.math.Rect(bbox.x, bbox.y, bbox.width, bbox.height);
+
+    this.bounds_ = new goog.math.Rect(bbox.x, -bbox.y, bbox.width, bbox.height);
+    this.baseLine = -bbox.y;
   }
   return this.bounds_;
 };
