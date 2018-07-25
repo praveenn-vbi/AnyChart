@@ -14,6 +14,7 @@ goog.require('goog.array');
  */
 anychart.stockModule.eventMarkers.Table = function() {
   this.data_ = [];
+  this.stickToLeft_ = true;
   this.dataReducer_ = goog.bind(this.dataReducer_, this);
 };
 
@@ -141,74 +142,74 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
     firstIndex = this.lastDataCache_.firstIndex || 0;
     count = this.lastDataCache_.count || 0;
   } else {
-    data = [];
-    lookups = [];
-    firstIndex = NaN;
-    count = 0;
-    var i = fromIndex;
-    var prevIterKey = NaN;
-    var prevIterIndex = NaN;
-    var items = [];
-    coIterator.reset();
-    while (coIterator.advance() && i < toIndex) {
-      var currItem;
-      while (i < toIndex && (currItem = this.data_[i]).key < coIterator.currentKey()) {
-        items.push(currItem);
-        i++;
+    if (this.stickToLeft_) {
+      data = [];
+      lookups = [];
+      firstIndex = NaN;
+      count = 0;
+      var i = fromIndex;
+      var prevIterKey = NaN;
+      var prevIterIndex = NaN;
+      var items = [];
+      coIterator.reset();
+      while (coIterator.advance() && i < toIndex) {
+        var currItem;
+        while (i < toIndex && (currItem = this.data_[i]).key < coIterator.currentKey()) {
+          items.push(currItem);
+          i++;
+        }
+        if (items.length) {
+          if (isNaN(prevIterKey) && !full) {
+            items.length = 0;
+          } else {
+            if (!data.length) {
+              firstIndex = i - items.length;
+            }
+            for (j = 0; j < items.length; j++) {
+              lookups.push(data.length);
+            }
+            data.push({
+              key: prevIterKey,
+              index: prevIterIndex,
+              items: items,
+              emIndex: i - items.length
+            });
+            count += items.length;
+            items = [];
+          }
+        }
       }
-      if (items.length) {
-        if (isNaN(prevIterKey) && !full) {
-          items.length = 0;
-        } else {
-          if (!data.length) {
-            firstIndex = i - items.length;
-          }
-          for (j = 0; j < items.length; j++) {
-            lookups.push(data.length);
-          }
+      this.lastDataCache_ = {
+        fromIndex: fromIndex,
+        toIndex: toIndex,
+        data: data,
+        lookups: lookups,
+        firstIndex: firstIndex,
+        count: count,
+        pointsCount: coIterator.getRowsCount()
+      };
+    } else {
+      data = [];
+      lookups = [];
+      firstIndex = 0;
+      count = this.data_.length;
+      var lookup = 0;
+      var from, to;
+      from = isNaN(fromOrNaNForFull) ? -Infinity : fromOrNaNForFull;
+      to = isNaN(toOrNaNForFull) ? +Infinity : toOrNaNForFull;
+      for (var i = 0; i < this.data_.length; i++) {
+        if (this.data_[i].key >= from && this.data_[i].key <= to) {
           data.push({
-            key: prevIterKey,
-            index: prevIterIndex,
-            items: items,
-            emIndex: i - items.length
+            key: this.data_[i].key,
+            index: i,
+            items: [this.data_[i]],
+            emIndex: i
           });
-          count += items.length;
-          items = [];
+          lookups.push(i);
+          lookup += 1;
         }
-      }
-      prevIterKey = coIterator.currentKey();
-      prevIterIndex = coIterator.currentIndex();
-    }
-    if (!isNaN(prevIterKey) || full) {
-      while (i < toIndex) {
-        items.push(currItem);
-        i++;
-      }
-      if (items.length) {
-        if (!data.length) {
-          firstIndex = i - items.length;
-        }
-        for (j = 0; j < items.length; j++) {
-          lookups.push(data.length);
-        }
-        data.push({
-          key: prevIterKey,
-          index: prevIterIndex,
-          items: items,
-          emIndex: i - items.length
-        });
-        count += items.length;
       }
     }
-    this.lastDataCache_ = {
-      fromIndex: fromIndex,
-      toIndex: toIndex,
-      data: data,
-      lookups: lookups,
-      firstIndex: firstIndex,
-      count: count,
-      pointsCount: coIterator.getRowsCount()
-    };
   }
 
   return new anychart.stockModule.eventMarkers.Table.Iterator(data, lookups, firstIndex, count);
