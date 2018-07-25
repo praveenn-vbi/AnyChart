@@ -24,12 +24,6 @@ anychart.stockModule.eventMarkers.Group = function(plot, index) {
   anychart.stockModule.eventMarkers.Group.base(this, 'constructor');
 
   /**
-   * @type {boolean}
-   * @private
-   */
-  this.stick_ = true;
-
-  /**
    * Stock plot reference.
    * @type {anychart.stockModule.Plot}
    */
@@ -138,16 +132,6 @@ anychart.stockModule.eventMarkers.Group.OWN_DESCRIPTORS_META = ([
     anychart.Signal.NEEDS_REDRAW]
 ]);
 
-
-/**
- * @param opt_value
- */
-anychart.stockModule.eventMarkers.Group.prototype.stick = function(opt_value) {
-  if (goog.isDef(opt_value) && this.stick_ != opt_value)
-    this.stick_ = opt_value;
-  else
-    return this.stick_;
-};
 
 /**
  * @const {!Array.<Array>}
@@ -339,7 +323,6 @@ anychart.stockModule.eventMarkers.Group.prototype.data = function(opt_value) {
     if (!goog.isArray(data))
       data = [];
     this.dataTable_.setData(data, dateTimePattern, timeOffset, baseDate, locale);
-    this.dataTable_.keepValues_ = !this.stick_;
     this.invalidate(anychart.ConsistencyState.EVENT_MARKERS_DATA, anychart.Signal.NEEDS_REDRAW);
     return this;
   }
@@ -492,6 +475,9 @@ anychart.stockModule.eventMarkers.Group.prototype.drawEventMarker = function(opt
   var offset, totalHeightDiff, hash;
   var xScale = /** @type {anychart.stockModule.scales.Scatter} */(this.plot.getChart().xScale());
   var iterator = this.getIterator();
+  var stickToRight = this.resolveOption('stickToNearestRight', 0, iterator, anychart.core.settings.booleanNormalizer, false);
+  if (!goog.isDef(stickToRight))
+    stickToRight = true;
   var state = Number(iterator.meta('state')) || anychart.PointState.NORMAL;
   var zIndex = state ?
       (state == 1 ?
@@ -550,7 +536,12 @@ anychart.stockModule.eventMarkers.Group.prototype.drawEventMarker = function(opt
   var directionIsUp = direction != anychart.enums.EventMarkerDirection.DOWN;
   hash = this.getPositionHash_(position, seriesId, fieldName, directionIsUp);
   iterator.meta('positionHash', hash);
-  var x = Math.round((xScale.transform(iterator.getX(), 0.5)) * this.pixelBoundsCache.width + this.pixelBoundsCache.left);
+  var date;
+  if (stickToRight)
+    date = iterator.getX();
+  else
+    date = iterator.get('date');
+  var x = Math.round((xScale.transform(date, 0.5)) * this.pixelBoundsCache.width + this.pixelBoundsCache.left);
   offset = (opt_offsets ? opt_offsets[hash] : Number(iterator.meta('offset'))) || 0;
   iterator.meta('offset', offset);
   var connectorLen = 0;
@@ -776,22 +767,13 @@ anychart.stockModule.eventMarkers.Group.prototype.getAutoHatchFill = function() 
 
 
 /**
- * @param {boolean=} opt_unmodified return iterator to unmodified (not sticked to closest values) data
  * @return {!anychart.stockModule.eventMarkers.Table.Iterator}
  */
-anychart.stockModule.eventMarkers.Group.prototype.getIterator = function(opt_unmodified) {
-  if (!goog.isDef(opt_unmodified) || !opt_unmodified)
-  {
-    if (!this.iterator_) {
-      this.iterator_ = this.getDetachedIterator();
-    }
-    return this.iterator_;
-  } else {
-    if (!this.iteratorUnmodified_){
-      this.iteratorUnmodified_ = this.dataTable_.getIteratorUnmodified();
-    }
-    return this.iteratorUnmodified_;
+anychart.stockModule.eventMarkers.Group.prototype.getIterator = function() {
+  if (!this.iterator_) {
+    this.iterator_ = this.getDetachedIterator();
   }
+  return this.iterator_;
 };
 
 

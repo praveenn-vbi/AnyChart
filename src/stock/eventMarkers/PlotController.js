@@ -20,13 +20,6 @@ anychart.stockModule.eventMarkers.PlotController = function(plot, chartControlle
   chartController.listenSignals(this.onSignal_, this);
 
   /**
-   * Stick groups to dates
-   * @type {boolean}
-   * @private
-   */
-  this.stick_ = true;
-
-  /**
    * Plot reference.
    * @type {anychart.stockModule.Plot}
    * @private
@@ -271,7 +264,6 @@ anychart.stockModule.eventMarkers.PlotController.prototype.group = function(opt_
     group = new anychart.stockModule.eventMarkers.Group(this.plot_, index);
     group.setParentEventTarget(this);
     group.setAutoZIndex(anychart.stockModule.eventMarkers.PlotController.Z_INDEX_MARKERS + this.groups_.length * anychart.stockModule.eventMarkers.PlotController.Z_INDEX_GROUPS_MULTI);
-    group.stick(this.stick_);
     this.groups_[index] = group;
     group.listenSignals(this.onSignal_, this);
     this.invalidate(anychart.ConsistencyState.EVENT_MARKERS_DATA, anychart.Signal.NEEDS_REDRAW);
@@ -550,8 +542,6 @@ anychart.stockModule.eventMarkers.PlotController.prototype.setupByJSON = functio
   this.hovered_.setupInternal(!!opt_default, config['hovered']);
   this.selected_.setupInternal(!!opt_default, config['selected']);
   this.tooltip().setupInternal(!!opt_default, config['tooltip']);
-  if (goog.isDef(config['stick']))
-    this.stick_ = config['stick'];
   // Group is not a typo
   anychart.core.settings.deserialize(this, anychart.stockModule.eventMarkers.Group.OWN_DESCRIPTORS, config);
 
