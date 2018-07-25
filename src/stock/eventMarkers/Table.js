@@ -41,6 +41,19 @@ anychart.stockModule.eventMarkers.Table.DataItem;
 anychart.stockModule.eventMarkers.Table.DataItemAggregate;
 
 
+anychart.stockModule.eventMarkers.Table.prototype.stickToLeft = function(opt_value) {
+  if (goog.isDef(opt_value)) {
+    opt_value = !!opt_value;
+    if (opt_value != this.stickToLeft_) {
+      this.stickToLeft_ = opt_value;
+      this.lastDataCache_ = null;
+      return this;
+    }
+  }
+
+  return this.stickToLeft_;
+};
+
 
 /**
  * Sets data to the table.
@@ -177,6 +190,29 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
             count += items.length;
             items = [];
           }
+        }
+        prevIterKey = coIterator.currentKey();
+        prevIterIndex = coIterator.currentIndex();
+      }
+      if (!isNaN(prevIterKey) || full) {
+        while (i < toIndex) {
+          items.push(currItem);
+          i++;
+        }
+        if (items.length) {
+          if (!data.length) {
+            firstIndex = i - items.length;
+          }
+          for (j = 0; j < items.length; j++) {
+            lookups.push(data.length);
+          }
+          data.push({
+            key: prevIterKey,
+            index: prevIterIndex,
+            items: items,
+            emIndex: i - items.length
+          });
+          count += items.length;
         }
       }
       this.lastDataCache_ = {

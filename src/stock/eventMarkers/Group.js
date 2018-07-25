@@ -545,23 +545,23 @@ anychart.stockModule.eventMarkers.Group.prototype.drawEventMarker = function(opt
   hash = this.getPositionHash_(position, seriesId, fieldName, directionIsUp);
   iterator.meta('positionHash', hash);
   var date;
-  if (stick)
+  //if (stick)
     date = iterator.getX();
-  else
-    date = iterator.get('date');
+  //else
+  //  date = iterator.get('date');
   var x = Math.round((xScale.transform(date, 0.5)) * this.pixelBoundsCache.width + this.pixelBoundsCache.left);
   offset = (opt_offsets ? opt_offsets[hash] : Number(iterator.meta('offset'))) || 0;
   iterator.meta('offset', offset);
   var connectorLen = 0;
   var connectorStroke = /** @type {acgraph.vector.Stroke} */(this.connectorStrokeResolver_(this, state));
-  if ((!offset || !stick) && connectorStroke) {
+  if ((!offset/* || !stick*/) && connectorStroke) {
     connectorLen = anychart.utils.normalizeSize(/** @type {number|string} */(this.resolveOption('length', state, iterator, anychart.core.settings.numberOrPercentNormalizer, true)), this.pixelBoundsCache.height);
     offset += connectorLen;
   }
-  if (stick)
-    y += directionIsUp ? -offset : offset;
-  else
-    y += directionIsUp ? -connectorLen : connectorLen;
+  //if (stick)
+  y += directionIsUp ? -offset : offset;
+  //else
+  //  y += directionIsUp ? -connectorLen : connectorLen;
   var tag = {
     group: this,
     index: iterator.getIndex()
@@ -1206,6 +1206,10 @@ anychart.stockModule.eventMarkers.Group.prototype.setupByJSON = function(config,
   this.selected_.setupInternal(!!opt_default, config['selected']);
   this.tooltip().setupInternal(!!opt_default, config['tooltip']);
   anychart.core.settings.deserialize(this, anychart.stockModule.eventMarkers.Group.OWN_DESCRIPTORS, config);
+  var stick = this.getOption('stickToLeft');
+  if (!goog.isDef(stick))
+    stick = true;
+  this.dataTable_.stickToLeft(stick);
 };
 
 
