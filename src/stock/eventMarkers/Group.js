@@ -129,7 +129,15 @@ anychart.stockModule.eventMarkers.Group.OWN_DESCRIPTORS_META = ([
     anychart.Signal.NEEDS_REDRAW],
   ['stickToLeft',
     anychart.ConsistencyState.EVENT_MARKERS_DATA,
-    anychart.Signal.NEEDS_REDRAW]
+    anychart.Signal.NEEDS_REDRAW, 0,
+    function() {
+      if (goog.isDef(this.dataTable_)) {
+        this.dataTable_.stickToLeft_ = this.getOption('stickToLeft');
+        this.dataTable_.lastDataCache_ = null;
+        this.iterator_ = null;
+      }
+    }
+  ]
 ]);
 
 

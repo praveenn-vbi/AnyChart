@@ -216,14 +216,21 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
       lookups = [];
       firstIndex = 0;
       count = this.data_.length;
+      var lookup = 0;
+      var from, to;
+      from = isNaN(fromOrNaNForFull) ? -Infinity : fromOrNaNForFull;
+      to = isNaN(toOrNaNForFull) ? +Infinity : toOrNaNForFull;
       for (var i = 0; i < this.data_.length; i++) {
-        data.push({
-          key: this.data_[i].key,
-          index: i,
-          items: [this.data_[i]],
-          emIndex: i
-        });
-        lookups.push(i);
+        if (this.data_[i].key >= from && this.data_[i].key <= to) {
+          data.push({
+            key: this.data_[i].key,
+            index: i,
+            items: [this.data_[i]],
+            emIndex: i
+          });
+          lookups.push(i);
+          lookup += 1;
+        }
       }
     }
   }
