@@ -210,6 +210,7 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
       pointsCount: coIterator.getRowsCount()
     };
   }
+
   return new anychart.stockModule.eventMarkers.Table.Iterator(data, lookups, firstIndex, count);
 };
 
