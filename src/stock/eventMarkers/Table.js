@@ -99,7 +99,6 @@ anychart.stockModule.eventMarkers.Table.prototype.setData = function(value, opt_
    * @type {Array.<anychart.stockModule.eventMarkers.Table.DataItem>}
    * @private
    */
-  //debugger;
   this.data_ = goog.array.reduce(value, this.dataReducer_, []);
   this.data_.sort(anychart.stockModule.eventMarkers.Table.DATA_ITEMS_COMPARATOR);
 };
@@ -124,7 +123,6 @@ anychart.stockModule.eventMarkers.Table.prototype.getData = function() {
  * @return {!anychart.stockModule.eventMarkers.Table.Iterator}
  */
 anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coIterator, fromOrNaNForFull, toOrNaNForFull) {
-  //debugger;
   var fromIndex, toIndex;
   var full = isNaN(fromOrNaNForFull) || isNaN(toOrNaNForFull);
   if (full) {
@@ -168,7 +166,6 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
           for (j = 0; j < items.length; j++) {
             lookups.push(data.length);
           }
-          //debugger;
           data.push({
             key: prevIterKey,
             index: prevIterIndex,
