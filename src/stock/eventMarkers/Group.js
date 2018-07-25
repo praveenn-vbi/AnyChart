@@ -103,7 +103,7 @@ anychart.stockModule.eventMarkers.Group.OWN_DESCRIPTORS = (function() {
     anychart.core.settings.descriptors.POSITION,
     anychart.core.settings.descriptors.SERIES_ID,
     anychart.core.settings.descriptors.FIELD_NAME,
-    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'stickToNearestRight', anychart.core.settings.booleanNormalizer]
+    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'stickToLeft', anychart.core.settings.booleanNormalizer]
   ]);
   return map;
 })();
@@ -127,7 +127,7 @@ anychart.stockModule.eventMarkers.Group.OWN_DESCRIPTORS_META = ([
   ['fieldName',
     anychart.ConsistencyState.EVENT_MARKERS_DATA,
     anychart.Signal.NEEDS_REDRAW],
-  ['stickToNearestRight',
+  ['stickToLeft',
     anychart.ConsistencyState.EVENT_MARKERS_DATA,
     anychart.Signal.NEEDS_REDRAW]
 ]);
@@ -475,9 +475,9 @@ anychart.stockModule.eventMarkers.Group.prototype.drawEventMarker = function(opt
   var offset, totalHeightDiff, hash;
   var xScale = /** @type {anychart.stockModule.scales.Scatter} */(this.plot.getChart().xScale());
   var iterator = this.getIterator();
-  var stickToRight = this.resolveOption('stickToNearestRight', 0, iterator, anychart.core.settings.booleanNormalizer, false);
-  if (!goog.isDef(stickToRight))
-    stickToRight = true;
+  var stick = this.resolveOption('stickToLeft', 0, iterator, anychart.core.settings.booleanNormalizer, false);
+  if (!goog.isDef(stick))
+    stick = true;
   var state = Number(iterator.meta('state')) || anychart.PointState.NORMAL;
   var zIndex = state ?
       (state == 1 ?
@@ -537,7 +537,7 @@ anychart.stockModule.eventMarkers.Group.prototype.drawEventMarker = function(opt
   hash = this.getPositionHash_(position, seriesId, fieldName, directionIsUp);
   iterator.meta('positionHash', hash);
   var date;
-  if (stickToRight)
+  if (stick)
     date = iterator.getX();
   else
     date = iterator.get('date');
@@ -546,11 +546,14 @@ anychart.stockModule.eventMarkers.Group.prototype.drawEventMarker = function(opt
   iterator.meta('offset', offset);
   var connectorLen = 0;
   var connectorStroke = /** @type {acgraph.vector.Stroke} */(this.connectorStrokeResolver_(this, state));
-  if (!offset && connectorStroke) {
+  if ((!offset || !stick) && connectorStroke) {
     connectorLen = anychart.utils.normalizeSize(/** @type {number|string} */(this.resolveOption('length', state, iterator, anychart.core.settings.numberOrPercentNormalizer, true)), this.pixelBoundsCache.height);
     offset += connectorLen;
   }
-  y += directionIsUp ? -offset : offset;
+  if (stick)
+    y += directionIsUp ? -offset : offset;
+  else
+    y += directionIsUp ? -connectorLen : connectorLen;
   var tag = {
     group: this,
     index: iterator.getIndex()
