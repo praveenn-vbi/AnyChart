@@ -533,24 +533,16 @@ anychart.stockModule.eventMarkers.Group.prototype.drawEventMarker = function(opt
   var directionIsUp = direction != anychart.enums.EventMarkerDirection.DOWN;
   hash = this.getPositionHash_(position, seriesId, fieldName, directionIsUp);
   iterator.meta('positionHash', hash);
-  var date;
-  //if (stick)
-    date = iterator.getX();
-  //else
-  //  date = iterator.get('date');
-  var x = Math.round((xScale.transform(date, 0.5)) * this.pixelBoundsCache.width + this.pixelBoundsCache.left);
+  var x = Math.round(xScale.transform(iterator.getX(), 0.5) * this.pixelBoundsCache.width + this.pixelBoundsCache.left);
   offset = (opt_offsets ? opt_offsets[hash] : Number(iterator.meta('offset'))) || 0;
   iterator.meta('offset', offset);
   var connectorLen = 0;
   var connectorStroke = /** @type {acgraph.vector.Stroke} */(this.connectorStrokeResolver_(this, state));
-  if ((!offset/* || !stick*/) && connectorStroke) {
+  if (!offset && connectorStroke) {
     connectorLen = anychart.utils.normalizeSize(/** @type {number|string} */(this.resolveOption('length', state, iterator, anychart.core.settings.numberOrPercentNormalizer, true)), this.pixelBoundsCache.height);
     offset += connectorLen;
   }
-  //if (stick)
   y += directionIsUp ? -offset : offset;
-  //else
-  //  y += directionIsUp ? -connectorLen : connectorLen;
   var tag = {
     group: this,
     index: iterator.getIndex()
@@ -782,8 +774,7 @@ anychart.stockModule.eventMarkers.Group.prototype.getIterator = function() {
  * @return {!anychart.stockModule.eventMarkers.Table.Iterator}
  */
 anychart.stockModule.eventMarkers.Group.prototype.getDetachedIterator = function(opt_full) {
-  var chain = this.getResolutionChain(null, 0, true, false);
-  var stick = this.resolveOptionFast(chain, 'stickToLeft', anychart.core.settings.booleanNormalizer);
+  var stick = this.resolveOptionFast(this.getResolutionChain(null, 0, true, false), 'stickToLeft', anychart.core.settings.booleanNormalizer);
   if (!goog.isDef(stick))
     stick = true;
   var args = this.plot.getChart().getEventMarkersIteratorParams(opt_full);
