@@ -88,7 +88,8 @@ anychart.stockModule.eventMarkers.Table.prototype.setData = function(value, opt_
    *    lookups: Array.<number>,
    *    firstIndex: number,
    *    count: number,
-   *    pointsCount: number
+   *    pointsCount: number,
+   *    stick: boolean
    * }}
    * @private
    */
@@ -239,6 +240,7 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
         lookups: lookups,
         firstIndex: firstIndex,
         count: count,
+        pointsCount: count,
         stick: stick
       };
     }
