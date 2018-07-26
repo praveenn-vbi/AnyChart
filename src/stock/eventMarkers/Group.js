@@ -775,8 +775,6 @@ anychart.stockModule.eventMarkers.Group.prototype.getIterator = function() {
  */
 anychart.stockModule.eventMarkers.Group.prototype.getDetachedIterator = function(opt_full) {
   var stick = this.resolveOptionFast(this.getResolutionChain(null, 0, true, false), 'stickToLeft', anychart.core.settings.booleanNormalizer);
-  if (!goog.isDef(stick))
-    stick = true;
   var args = this.plot.getChart().getEventMarkersIteratorParams(opt_full);
   args.push(stick);
   return this.dataTable_.getIterator.apply(this.dataTable_, args);
