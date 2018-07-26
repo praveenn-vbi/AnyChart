@@ -131,11 +131,8 @@ anychart.stockModule.eventMarkers.Group.OWN_DESCRIPTORS_META = ([
     anychart.ConsistencyState.EVENT_MARKERS_DATA,
     anychart.Signal.NEEDS_REDRAW, 0,
     function() {
-      if (goog.isDef(this.dataTable_)) {
-        this.dataTable_.stickToLeft_ = this.getOption('stickToLeft');
-        this.dataTable_.lastDataCache_ = null;
+      if (goog.isDef(this.iterator_))
         this.iterator_ = null;
-      }
     }
   ]
 ]);
@@ -483,9 +480,6 @@ anychart.stockModule.eventMarkers.Group.prototype.drawEventMarker = function(opt
   var offset, totalHeightDiff, hash;
   var xScale = /** @type {anychart.stockModule.scales.Scatter} */(this.plot.getChart().xScale());
   var iterator = this.getIterator();
-  var stick = this.resolveOption('stickToLeft', 0, iterator, anychart.core.settings.booleanNormalizer, false);
-  if (!goog.isDef(stick))
-    stick = true;
   var state = Number(iterator.meta('state')) || anychart.PointState.NORMAL;
   var zIndex = state ?
       (state == 1 ?
@@ -793,7 +787,13 @@ anychart.stockModule.eventMarkers.Group.prototype.getIterator = function() {
  * @return {!anychart.stockModule.eventMarkers.Table.Iterator}
  */
 anychart.stockModule.eventMarkers.Group.prototype.getDetachedIterator = function(opt_full) {
-  return this.dataTable_.getIterator.apply(this.dataTable_, this.plot.getChart().getEventMarkersIteratorParams(opt_full));
+  var chain = this.getResolutionChain(null, 0, true, false);
+  var stick = this.resolveOptionFast(chain, 'stickToLeft', anychart.core.settings.booleanNormalizer);
+  if (!goog.isDef(stick))
+    stick = true;
+  var args = this.plot.getChart().getEventMarkersIteratorParams(opt_full);
+  args.push(stick);
+  return this.dataTable_.getIterator.apply(this.dataTable_, args);
 };
 
 
@@ -1206,10 +1206,6 @@ anychart.stockModule.eventMarkers.Group.prototype.setupByJSON = function(config,
   this.selected_.setupInternal(!!opt_default, config['selected']);
   this.tooltip().setupInternal(!!opt_default, config['tooltip']);
   anychart.core.settings.deserialize(this, anychart.stockModule.eventMarkers.Group.OWN_DESCRIPTORS, config);
-  var stick = this.getOption('stickToLeft');
-  if (!goog.isDef(stick))
-    stick = true;
-  this.dataTable_.stickToLeft(stick);
 };
 
 

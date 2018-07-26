@@ -134,9 +134,10 @@ anychart.stockModule.eventMarkers.Table.prototype.getData = function() {
  * @param {anychart.stockModule.data.TableIterator.ICoIterator} coIterator
  * @param {number} fromOrNaNForFull
  * @param {number} toOrNaNForFull
+ * @param {boolean} stick
  * @return {!anychart.stockModule.eventMarkers.Table.Iterator}
  */
-anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coIterator, fromOrNaNForFull, toOrNaNForFull) {
+anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coIterator, fromOrNaNForFull, toOrNaNForFull, stick) {
   var fromIndex, toIndex;
   var full = isNaN(fromOrNaNForFull) || isNaN(toOrNaNForFull);
   if (full) {
@@ -149,13 +150,13 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
 
 
   var data, count, lookups, firstIndex, j;
-  if (this.lastDataCache_ && this.lastDataCache_.fromIndex == fromIndex && this.lastDataCache_.toIndex == toIndex && this.lastDataCache_.pointsCount == coIterator.getRowsCount()) {
+  if (this.lastDataCache_ && this.lastDataCache_.stick == stick && this.lastDataCache_.fromIndex == fromIndex && this.lastDataCache_.toIndex == toIndex && this.lastDataCache_.pointsCount == coIterator.getRowsCount()) {
     data = this.lastDataCache_.data;
     lookups = this.lastDataCache_.lookups;
     firstIndex = this.lastDataCache_.firstIndex || 0;
     count = this.lastDataCache_.count || 0;
   } else {
-    if (this.stickToLeft_) {
+    if (stick) {
       data = [];
       lookups = [];
       firstIndex = NaN;
@@ -222,7 +223,8 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
         lookups: lookups,
         firstIndex: firstIndex,
         count: count,
-        pointsCount: coIterator.getRowsCount()
+        pointsCount: coIterator.getRowsCount(),
+        stick: stick
       };
     } else {
       data = [];
@@ -245,6 +247,15 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
           lookup += 1;
         }
       }
+      this.lastDataCache_ = {
+        fromIndex: fromIndex,
+        toIndex: toIndex,
+        data: data,
+        lookups: lookups,
+        firstIndex: firstIndex,
+        count: count,
+        stick: stick
+      };
     }
   }
 
