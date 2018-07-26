@@ -171,7 +171,8 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
             data.push({
               key: prevIterKey,
               index: prevIterIndex,
-              items: items
+              items: items,
+              emIndex: i - items.length
             });
             count += items.length;
             items = [];
