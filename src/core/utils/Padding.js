@@ -37,6 +37,55 @@ anychart.core.utils.Padding.prototype.widenBounds = function(boundsRect) {
 };
 
 
+/**
+ * @param {anychart.math.Rect} bounds
+ * @param {Object} padding
+ * @return {*}
+ */
+anychart.core.utils.Padding.widenBounds = function(bounds, padding) {
+  var initialHeight = bounds.height;
+  var initialWidth = bounds.width;
+
+  var top = padding.top;
+  var bottom = padding.bottom;
+  var left = padding.left;
+  var right = padding.right;
+
+  var width, height;
+
+  var ratio = 1;
+  if (anychart.utils.isPercent(top))
+    ratio -= parseFloat(top) / 100;
+  else
+    initialHeight += goog.isNumber(top) ? top : parseFloat(top);
+  if (anychart.utils.isPercent(bottom))
+    ratio -= parseFloat(bottom) / 100;
+  else
+    initialHeight += goog.isNumber(bottom) ? bottom : parseFloat(bottom);
+  if (!ratio) ratio = 1e-7;
+  height = initialHeight / ratio;
+
+  ratio = 1;
+  if (anychart.utils.isPercent(left))
+    ratio -= parseFloat(left) / 100;
+  else
+    initialWidth += goog.isNumber(left) ? left : parseFloat(left);
+  if (anychart.utils.isPercent(right))
+    ratio -= parseFloat(right) / 100;
+  else
+    initialWidth += goog.isNumber(right) ? right : parseFloat(right);
+  if (!ratio) ratio = 1e-7;
+  width = initialWidth / ratio;
+
+  return new anychart.math.Rect(
+      bounds.left - left,
+      bounds.top - top,
+      width,
+      height
+  );
+};
+
+
 /** @inheritDoc */
 anychart.core.utils.Padding.prototype.widenHeight = function(initialHeight) {
   var top = /** @type {number|string} */(this.getOption('top'));
