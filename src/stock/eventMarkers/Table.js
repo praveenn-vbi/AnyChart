@@ -135,7 +135,7 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
   }
 
 
-  var data, count, lookups, firstIndex, j;
+  var data, count, lookups, firstIndex, j, pointsCount;
   if (this.lastDataCache_ && this.lastDataCache_.stick == stick && this.lastDataCache_.fromIndex == fromIndex && this.lastDataCache_.toIndex == toIndex && this.lastDataCache_.pointsCount == coIterator.getRowsCount()) {
     data = this.lastDataCache_.data;
     lookups = this.lastDataCache_.lookups;
@@ -201,16 +201,7 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
           count += items.length;
         }
       }
-      this.lastDataCache_ = {
-        fromIndex: fromIndex,
-        toIndex: toIndex,
-        data: data,
-        lookups: lookups,
-        firstIndex: firstIndex,
-        count: count,
-        pointsCount: coIterator.getRowsCount(),
-        stick: stick
-      };
+      pointsCount = coIterator.getRowsCount();
     } else {
       data = [];
       lookups = [];
@@ -232,17 +223,18 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
           lookup += 1;
         }
       }
-      this.lastDataCache_ = {
-        fromIndex: fromIndex,
-        toIndex: toIndex,
-        data: data,
-        lookups: lookups,
-        firstIndex: firstIndex,
-        count: count,
-        pointsCount: count,
-        stick: stick
-      };
+      pointsCount = count;
     }
+    this.lastDataCache_ = {
+      fromIndex: fromIndex,
+      toIndex: toIndex,
+      data: data,
+      lookups: lookups,
+      firstIndex: firstIndex,
+      count: count,
+      pointsCount: count,
+      stick: stick
+    };
   }
 
   return new anychart.stockModule.eventMarkers.Table.Iterator(data, lookups, firstIndex, count);
