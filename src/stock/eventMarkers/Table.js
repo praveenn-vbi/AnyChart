@@ -14,7 +14,6 @@ goog.require('goog.array');
  */
 anychart.stockModule.eventMarkers.Table = function() {
   this.data_ = [];
-  this.stickToLeft_ = true;
   this.dataReducer_ = goog.bind(this.dataReducer_, this);
 };
 
@@ -39,20 +38,6 @@ anychart.stockModule.eventMarkers.Table.DataItem;
  * }}
  */
 anychart.stockModule.eventMarkers.Table.DataItemAggregate;
-
-
-anychart.stockModule.eventMarkers.Table.prototype.stickToLeft = function(opt_value) {
-  if (goog.isDef(opt_value)) {
-    opt_value = !!opt_value;
-    if (opt_value != this.stickToLeft_) {
-      this.stickToLeft_ = opt_value;
-      this.lastDataCache_ = null;
-      return this;
-    }
-  }
-
-  return this.stickToLeft_;
-};
 
 
 /**
