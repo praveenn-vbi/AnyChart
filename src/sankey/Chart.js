@@ -271,7 +271,6 @@ anychart.sankeyModule.Chart.prototype.calculateLevels_ = function() {
 
   var iterator = this.getIterator().reset();
   this.lastLevel = -1;
-  debugger;
   while (iterator.advance()) {
     from = /** @type {string} */ (iterator.get('from'));
     to = /** @type {string} */ (iterator.get('to'));
