@@ -65,6 +65,10 @@ anychart.colorScalesModule.Linear.prototype.normalizeColors_ = function(var_args
 
   var keys = acgraph.vector.normalizeFill(args[0])['keys'];
 
+  for(var i = 0; i < keys.length; i++) {
+    keys[i]['color'] = goog.color.hexToRgb(anychart.color.parseColor(keys[i]['color']).hex);
+  }
+
   goog.array.sortObjectsByKey(keys, 'offset');
 
   return keys;
