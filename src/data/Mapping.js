@@ -185,7 +185,7 @@ anychart.data.Mapping.prototype.checkFieldExist = function(name) {
  */
 anychart.data.Mapping.DEFAULT_MAPPING = {
   'x': [0, 'column', 'x'],
-  'value': [2, 1, 0, 'value', 'y', 'close', 'heat'],
+  'value': [1, 0, 'value', 'y', 'close', 'heat'],
   'size': [2, 1], // bubble series
   'open': [1],
   'high': [2],
@@ -214,7 +214,12 @@ anychart.data.Mapping.DEFAULT_MAPPING = {
   'category': [2],
 
   // water fall
-  'isTotal': [2]
+  'isTotal': [2],
+
+  // sankey diagram
+  'from': [0],
+  'to': [1],
+  'flow': [2, 'flow', 'weight', 'value']
 };
 
 
