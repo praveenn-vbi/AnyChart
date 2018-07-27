@@ -44,50 +44,6 @@ anychart.colorScalesModule.Linear.prototype.getType = function() {
 };
 
 
-/**
- * @param {...(string|acgraph.vector.SolidFill|acgraph.vector.LinearGradientFill |
-      acgraph.vector.RadialGradientFill|Array.<string|acgraph.vector.SolidFill|acgraph.vector.LinearGradientFill |
-      acgraph.vector.RadialGradientFill>)} var_args
- * @return {Array.<Object>}
- * @private
- */
-anychart.colorScalesModule.Linear.prototype.extractKeys_ = function(var_args) {
-  var i, len, key;
-
-  var keys = [];
-
-  for (i = 0, len = arguments.length; i < len; i++) {
-    var arg = arguments[i];
-
-    if (goog.isString(arg)) {
-      keys.push(acgraph.vector.parseColor(arg, true));
-    } else if (goog.isArray(arg)) {
-      var colors = acgraph.vector.normalizeFill(arg);
-      keys.push.apply(keys, this.extractKeys_.apply(this, colors['keys']));
-    } else if (goog.isObject(arg)) {
-      var keysAttr = arg['keys'];
-      if (goog.isDef(keysAttr) && goog.isArray(keysAttr)) {
-        var colorKeys = this.extractKeys_.apply(this, arg['keys']);
-        var gOpacity = arg['opacity'];
-        if (goog.isDef(gOpacity)) {
-          for (var j = 0; j < colorKeys.length; j++) {
-            key = colorKeys[j];
-            if (!goog.isDef(key['opacity'])) {
-              key['opacity'] = gOpacity;
-            }
-          }
-        }
-
-        keys.push.apply(keys, colorKeys);
-      } else {
-        keys.push(arg);
-      }
-    }
-  }
-
-  return keys;
-};
-
 
 /**
  * @param {...(string|acgraph.vector.SolidFill|acgraph.vector.LinearGradientFill |
@@ -97,19 +53,17 @@ anychart.colorScalesModule.Linear.prototype.extractKeys_ = function(var_args) {
  * @private
  */
 anychart.colorScalesModule.Linear.prototype.normalizeColors_ = function(var_args) {
-  var keys = this.extractKeys_.apply(this, arguments);
-
-  for (var i = 0, len = keys.length; i < len; i++) {
-    var key = keys[i];
-    if (!goog.isDef(key['offset']))
-      key['offset'] = !i ? 0 : i == len - 1 ? 1 : i / (len - 1);
-    var color = key['color'];
-    if (goog.isArray(color)) {
-      key['color'] = goog.array.clone(color);
-    } else if (goog.isString(color)) {
-      key['color'] = goog.color.hexToRgb(anychart.color.parseColor(color).hex);
+  var args = [];
+  if (arguments.length > 1) {
+    args[0] = [];
+    for (var i = 0; i < arguments.length; i++) {
+      args[0].push(arguments[i]);
     }
+  } else {
+    args[0] = arguments[0];
   }
+
+  var keys = acgraph.vector.normalizeFill(args[0])['keys'];
 
   goog.array.sortObjectsByKey(keys, 'offset');
 
