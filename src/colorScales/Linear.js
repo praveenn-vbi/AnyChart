@@ -44,6 +44,7 @@ anychart.colorScalesModule.Linear.prototype.getType = function() {
 };
 
 
+
 /**
  * @param {...(string|acgraph.vector.SolidFill|acgraph.vector.LinearGradientFill |
       acgraph.vector.RadialGradientFill|Array.<string|acgraph.vector.SolidFill|acgraph.vector.LinearGradientFill |
@@ -53,14 +54,12 @@ anychart.colorScalesModule.Linear.prototype.getType = function() {
  */
 anychart.colorScalesModule.Linear.prototype.normalizeColors_ = function(var_args) {
   var args = [];
-  if (arguments.length > 1) {
-    args[0] = [];
-    for (var i = 0; i < arguments.length; i++) {
-      args[0].push(arguments[i]);
-    }
-  } else {
-    args[0] = arguments[0];
+
+  for (var i = 0; i < arguments.length; i++) {
+    args.push(arguments[i]);
   }
+
+  args = [goog.array.flatten(args)];
 
   var keys = acgraph.vector.normalizeFill(args[0])['keys'];
 
