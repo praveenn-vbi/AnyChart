@@ -44,7 +44,6 @@ anychart.colorScalesModule.Linear.prototype.getType = function() {
 };
 
 
-
 /**
  * @param {...(string|acgraph.vector.SolidFill|acgraph.vector.LinearGradientFill |
       acgraph.vector.RadialGradientFill|Array.<string|acgraph.vector.SolidFill|acgraph.vector.LinearGradientFill |
