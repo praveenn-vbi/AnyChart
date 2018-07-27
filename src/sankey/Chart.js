@@ -69,7 +69,7 @@ anychart.core.settings.populate(anychart.sankeyModule.Chart, anychart.sankeyModu
 
 /**
  * Descriptors meta.
- * @type {Array.<Array>}
+ * @type {!Array.<Array>}
  */
 anychart.sankeyModule.Chart.OWN_DESCRIPTORS_META = (function() {
   return [
@@ -278,9 +278,6 @@ anychart.sankeyModule.Chart.prototype.calculateLevels_ = function() {
     if (this.isMissing_(from, to, flow))
       continue;
 
-    if (from == 'QWER' && to === 'India')
-      debugger;
-
     fromNodeMeta = nodeMetas[from];
     if (!fromNodeMeta) {
       nodeMetas[from] = fromNodeMeta = {
@@ -339,7 +336,7 @@ anychart.sankeyModule.Chart.prototype.calculateLevels_ = function() {
       nodeMeta.nodeHeight = nodeMeta.incomeValue;
     // other nodes
     else
-      nodeMeta.nodeHeight = Math.max(nodeMeta.incomeValue, nodeMeta.out);
+      nodeMeta.nodeHeight = Math.max(nodeMeta.incomeValue, nodeMeta.outcomeValue);
 
     var level = nodeMeta.level;
     this.levels[level] ? this.levels[level].push(nodeName) : this.levels[level] = [nodeName];
