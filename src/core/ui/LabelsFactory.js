@@ -652,6 +652,7 @@ anychart.core.ui.LabelsFactory.prototype.labelsCount = function() {
  * @return {!anychart.core.ui.LabelsFactory.Label} Returns new label instance.
  */
 anychart.core.ui.LabelsFactory.prototype.add = function(formatProvider, positionProvider, opt_index) {
+  //debugger;
   var label, index;
   if (!goog.isDef(this.labels_)) this.labels_ = [];
 
@@ -715,6 +716,7 @@ anychart.core.ui.LabelsFactory.prototype.draw = function() {
   if (this.isDisposed())
     return this;
 
+  //debugger;
   if (!this.layer_) {
     this.layer_ = acgraph.layer();
     this.bindHandlersToGraphics(this.layer_);
@@ -761,6 +763,7 @@ anychart.core.ui.LabelsFactory.prototype.draw = function() {
  * @return {anychart.math.Rect} Label bounds.
  */
 anychart.core.ui.LabelsFactory.prototype.getDimension = function(formatProviderOrLabel, opt_positionProvider, opt_settings, opt_cacheIndex) {
+  /* Problem is here, parent bounds aren't set, thus 50% is calculated as 50, not as 0.5*parentWidth */
   var text;
   var textElementBounds;
   var textWidth;
@@ -861,6 +864,8 @@ anychart.core.ui.LabelsFactory.prototype.getDimension = function(formatProviderO
 
   //calculate text width and outer width
   var width;
+  //if (widthSettings == '50%')
+  //  debugger;
   if (isWidthSet) {
     width = Math.ceil(anychart.utils.normalizeSize(/** @type {number|string} */(widthSettings), parentWidth));
     textWidth = padding ? padding.tightenWidth(width) : width;
@@ -2172,6 +2177,7 @@ anychart.core.ui.LabelsFactory.Label.prototype.drawLabel = function(bounds, pare
 
   bounds.left = position.x;
   bounds.top = position.y;
+  console.log(bounds);
 
   this.textElement.x(/** @type {number} */(this.textX + position.x)).y(/** @type {number} */(this.textY + position.y));
 };

@@ -1829,6 +1829,7 @@ anychart.core.Axis.prototype.drawLabel_ = function(value, ratio, index, pixelShi
     label = labels.add(formatProvider, positionProvider, index);
     label.stateOrder([label.ownSettings, labels.ownSettings, labels.themeSettings]);
   }
+  debugger;
   label.positionProvider(positionProvider);
 };
 

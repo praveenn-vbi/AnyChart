@@ -285,6 +285,8 @@ anychart.core.VisualBase.prototype.isOwnStage = function() {
  * @return {(acgraph.vector.ILayer|!anychart.core.VisualBase)} .
  */
 anychart.core.VisualBase.prototype.container = function(opt_value) {
+  if (this.getOption('width') == '50%' && goog.isDef(opt_value))
+    debugger;
   if (goog.isDef(opt_value)) {
     /** @type {?(acgraph.vector.ILayer|Element)} */
     var value = (goog.isString(opt_value) ? anychart.document.getElementById(opt_value) : opt_value);
@@ -485,6 +487,8 @@ anychart.core.VisualBase.prototype.remove = goog.nullFunction;
  */
 anychart.core.VisualBase.prototype.parentBounds = function(opt_boundsOrLeft, opt_top, opt_width, opt_height) {
   if (goog.isDef(opt_boundsOrLeft)) {
+    if (this.getOption('widht') == '50%')
+      debugger;
     var left, top, width, height;
     if (goog.isNull(opt_boundsOrLeft)) {
       if (this.parentBounds_) {
