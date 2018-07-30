@@ -44,7 +44,6 @@ anychart.colorScalesModule.Linear.prototype.getType = function() {
 };
 
 
-
 /**
  * @param {...(string|acgraph.vector.SolidFill|acgraph.vector.LinearGradientFill |
       acgraph.vector.RadialGradientFill|Array.<string|acgraph.vector.SolidFill|acgraph.vector.LinearGradientFill |
@@ -55,13 +54,15 @@ anychart.colorScalesModule.Linear.prototype.getType = function() {
 anychart.colorScalesModule.Linear.prototype.normalizeColors_ = function(var_args) {
   var args = [];
 
+  //Push arguments into array if it isn't an array ('red', 'green', 'blue') -> ['red', 'green', 'blue']
   for (var i = 0; i < arguments.length; i++) {
     args.push(arguments[i]);
   }
 
-  args = [goog.array.flatten(args)];
+  //Convert ['red',['0.5 green',['blue']] to ['red', '0.5 green' 'blue']
+  args = goog.array.flatten(args);
 
-  var keys = acgraph.vector.normalizeFill(args[0])['keys'];
+  var keys = acgraph.vector.normalizeFill(args)['keys'];
 
   for (var i = 0; i < keys.length; i++) {
     keys[i]['color'] = goog.color.hexToRgb(anychart.color.parseColor(keys[i]['color']).hex);
