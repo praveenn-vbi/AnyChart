@@ -103,7 +103,7 @@ anychart.stockModule.eventMarkers.Group.OWN_DESCRIPTORS = (function() {
     anychart.core.settings.descriptors.POSITION,
     anychart.core.settings.descriptors.SERIES_ID,
     anychart.core.settings.descriptors.FIELD_NAME,
-    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'stickToLeft', anychart.core.settings.booleanNormalizer]
+    anychart.core.settings.descriptors.STICK_TO_LEFT
   ]);
   return map;
 })();
