@@ -220,7 +220,7 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
             items: [this.data_[i]],
             emIndex: i
           });
-          lookups.push(i);
+          lookups.push(lookup);
           lookup += 1;
         }
       }
@@ -233,7 +233,7 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
       lookups: lookups,
       firstIndex: firstIndex,
       count: count,
-      pointsCount: count,
+      pointsCount: pointsCount,
       stick: stick
     };
   }
