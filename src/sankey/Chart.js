@@ -51,6 +51,7 @@ anychart.sankeyModule.Chart.OWN_DESCRIPTORS = (function() {
 
   anychart.core.settings.createDescriptors(map, [
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'nodeWidth', anychart.core.settings.numberOrPercentNormalizer],
+    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'nodePadding', anychart.core.settings.numberNormalizer],
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'levels', anychart.core.settings.asIsNormalizer],
     [anychart.enums.PropertyHandlerType.MULTI_ARG, 'nodeFill', anychart.core.settings.fillOrFunctionNormalizer],
     [anychart.enums.PropertyHandlerType.MULTI_ARG, 'nodeStroke', anychart.core.settings.strokeOrFunctionNormalizer],
@@ -74,6 +75,7 @@ anychart.core.settings.populate(anychart.sankeyModule.Chart, anychart.sankeyModu
 anychart.sankeyModule.Chart.OWN_DESCRIPTORS_META = (function() {
   return [
     ['nodeWidth', anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW],
+    ['nodePadding', anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW],
     ['levels', anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW],
     ['nodeFill', anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW],
     ['nodeStroke', anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW],
@@ -194,6 +196,16 @@ anychart.sankeyModule.Chart.NodeMeta;
 
 
 /**
+ * @typedef {{
+ *   nodes: Array.<string>,
+ *   nodeHeightsSum: number,
+ *   top: number
+ * }}
+ */
+anychart.sankeyModule.Chart.LevelMeta;
+
+
+/**
  * Update node levels
  * @param {anychart.sankeyModule.Chart.NodeMeta} fromNodeMeta
  */
@@ -257,7 +269,7 @@ anychart.sankeyModule.Chart.prototype.calculateLevels_ = function() {
    * Node metas by node name.
    * @type {Object.<string, anychart.sankeyModule.Chart.NodeMeta>}
    */
-  var nodeMetas = {};
+  this.nodeMetas = {};
 
   /**
    * @type {anychart.sankeyModule.Chart.NodeMeta}
@@ -278,9 +290,9 @@ anychart.sankeyModule.Chart.prototype.calculateLevels_ = function() {
     if (this.isMissing_(from, to, flow))
       continue;
 
-    fromNodeMeta = nodeMetas[from];
+    fromNodeMeta = this.nodeMetas[from];
     if (!fromNodeMeta) {
-      nodeMetas[from] = fromNodeMeta = {
+      this.nodeMetas[from] = fromNodeMeta = {
         name: from,
         level: 0,
         incomeValue: NaN,
@@ -296,9 +308,9 @@ anychart.sankeyModule.Chart.prototype.calculateLevels_ = function() {
     if (to === null) {
       this.createDropOffFlow(fromNodeMeta, flow);
     } else {
-      toNodeMeta = nodeMetas[to];
+      toNodeMeta = this.nodeMetas[to];
       if (!toNodeMeta) {
-        nodeMetas[to] = toNodeMeta = {
+        this.nodeMetas[to] = toNodeMeta = {
           name: to,
           level: -1,
           incomeValue: 0,
@@ -314,10 +326,18 @@ anychart.sankeyModule.Chart.prototype.calculateLevels_ = function() {
       this.createFlow(fromNodeMeta, toNodeMeta, flow);
     }
   }
-  this.levels = {};
+  /**
+   * Levels meta.
+   * @type {Array.<anychart.sankeyModule.Chart.LevelMeta>}
+   */
+  this.levels = [];
+
   this.setAsLast = true;
-  for (var nodeName in nodeMetas) {
-    var nodeMeta = nodeMetas[nodeName];
+  this.maxLevelHeight = 0;
+  this.maxLevel = -1;
+
+  for (var nodeName in this.nodeMetas) {
+    var nodeMeta = this.nodeMetas[nodeName];
 
     // place node without outcome nodes at last level
     if (!nodeMeta.outcomeNodes.length && this.setAsLast)
@@ -339,10 +359,24 @@ anychart.sankeyModule.Chart.prototype.calculateLevels_ = function() {
       nodeMeta.nodeHeight = Math.max(nodeMeta.incomeValue, nodeMeta.outcomeValue);
 
     var level = nodeMeta.level;
-    this.levels[level] ? this.levels[level].push(nodeName) : this.levels[level] = [nodeName];
+    var levelMeta = this.levels[level];
+    if (!this.levels[level]) {
+      this.levels[level] = levelMeta = {
+        nodes: [],
+        nodeHeightsSum: 0,
+        top: NaN
+      };
+    }
+    levelMeta.nodes.push(nodeName);
+    levelMeta.nodeHeightsSum += nodeMeta.nodeHeight;
+    if (levelMeta.nodeHeightsSum > this.maxLevelHeight) {
+      this.maxLevelHeight = levelMeta.nodeHeightsSum;
+      this.maxLevel = level;
+    }
   }
 
   console.log(this.levels);
+  console.log(this.maxLevel, this.maxLevelHeight);
 };
 
 
@@ -401,14 +435,47 @@ anychart.sankeyModule.Chart.prototype.drawContent = function(bounds) {
     var level;
     var levelsCount = this.levels.length;
     var levelWidth = bounds.width / levelsCount;
-    var nodeWidth = /** @type {string|number} */ (this.getOption('nodeWidth'));
+
+    var nodePadding = /** @type {number} */ (this.getOption('nodePadding')) || 10;
+    var nodeWidth = /** @type {string|number} */ (this.getOption('nodeWidth')) || '20%';
     nodeWidth = anychart.utils.normalizeSize(nodeWidth, levelWidth);
+    var maxLevelNodesCount = this.levels[this.maxLevel].nodes.length;
+
+    var aspect = (bounds.height - (maxLevelNodesCount - 1) * nodePadding) / this.maxLevelHeight;
+
+    var nodesPerLevel;
+
     for (var i = 0; i < this.levels.length; i++) {
       level = this.levels[i];
+      nodesPerLevel = level.nodes.length;
+      var height = (nodesPerLevel - 1) * nodePadding + level.nodeHeightsSum * aspect;
+      level.top = bounds.top + (bounds.height - height) / 2;
 
+      var lastTop = level.top;
+      for (var j = 0; j < level.nodes.length; j++) {
+        var nodeMeta = this.nodeMetas[level.nodes[j]];
+        var nodeHeight = nodeMeta.nodeHeight * aspect;
+
+        var path = this.rootElement.path().zIndex(0).fill(null).stroke('black');
+        var left = (i * levelWidth) + (levelWidth - nodeWidth) / 2;
+        var top = lastTop;
+
+        path
+            .moveTo(left, top)
+            .lineTo(left + nodeWidth, top)
+            .lineTo(left + nodeWidth, top + nodeHeight)
+            .lineTo(left, top + nodeHeight)
+            .lineTo(left, top);
+
+        lastTop = top + nodeHeight + nodePadding;
+      }
     }
+
+    console.log(this.levels);
+
     this.markConsistent(anychart.ConsistencyState.BOUNDS);
   }
+
 
   if (this.hasInvalidationState(anychart.ConsistencyState.APPEARANCE)) {
     //
