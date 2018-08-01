@@ -533,7 +533,7 @@ anychart.stockModule.eventMarkers.Group.prototype.drawEventMarker = function(opt
   var directionIsUp = direction != anychart.enums.EventMarkerDirection.DOWN;
   hash = this.getPositionHash_(position, seriesId, fieldName, directionIsUp);
   iterator.meta('positionHash', hash);
-  var x = Math.round(xScale.transform(iterator.getX(), 0.5) * this.pixelBoundsCache.width + this.pixelBoundsCache.left);
+  var x = xScale.transform(iterator.getX(), 0.5) * this.pixelBoundsCache.width + this.pixelBoundsCache.left;
   offset = (opt_offsets ? opt_offsets[hash] : Number(iterator.meta('offset'))) || 0;
   iterator.meta('offset', offset);
   var connectorLen = 0;
