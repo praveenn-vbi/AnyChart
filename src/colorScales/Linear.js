@@ -47,25 +47,68 @@ anychart.colorScalesModule.Linear.prototype.getType = function() {
 /**
  * @param {...(string|acgraph.vector.SolidFill|acgraph.vector.LinearGradientFill |
       acgraph.vector.RadialGradientFill|Array.<string|acgraph.vector.SolidFill|acgraph.vector.LinearGradientFill |
+      acgraph.vector.RadialGradientFill>)} var_args
+ * @return {Array.<Object>}
+ * @private
+ */
+anychart.colorScalesModule.Linear.prototype.extractKeys_ = function(var_args) {
+  var i, len, key;
+
+  var keys = [];
+
+  for (i = 0, len = arguments.length; i < len; i++) {
+    var arg = arguments[i];
+
+    if (goog.isString(arg)) {
+      keys.push(acgraph.vector.parseColor(arg, true));
+    } else if (goog.isArray(arg)) {
+      var colors = acgraph.vector.normalizeFill(arg)['keys'];
+      return colors;
+    } else if (goog.isObject(arg)) {
+      var keysAttr = arg['keys'];
+      if (goog.isDef(keysAttr) && goog.isArray(keysAttr)) {
+        var colorKeys = this.extractKeys_.apply(this, arg['keys']);
+        var gOpacity = arg['opacity'];
+        if (goog.isDef(gOpacity)) {
+          for (var j = 0; j < colorKeys.length; j++) {
+            key = colorKeys[j];
+            if (!goog.isDef(key['opacity'])) {
+              key['opacity'] = gOpacity;
+            }
+          }
+        }
+
+        keys.push.apply(keys, colorKeys);
+      } else {
+        keys.push(arg);
+      }
+    }
+  }
+
+  return keys;
+};
+
+
+/**
+ * @param {...(string|acgraph.vector.SolidFill|acgraph.vector.LinearGradientFill |
+      acgraph.vector.RadialGradientFill|Array.<string|acgraph.vector.SolidFill|acgraph.vector.LinearGradientFill |
       acgraph.vector.RadialGradientFill>)} var_args .
  * @return {Array.<!Object>}
  * @private
  */
 anychart.colorScalesModule.Linear.prototype.normalizeColors_ = function(var_args) {
-  var args = [];
+  var keys = this.extractKeys_.apply(this, arguments);
 
-  //Push arguments into array if it isn't an array ('red', 'green', 'blue') -> ['red', 'green', 'blue']
-  for (var i = 0; i < arguments.length; i++) {
-    args.push(arguments[i]);
-  }
-
-  //Convert ['red',['0.5 green',['blue']] to ['red', '0.5 green' 'blue']
-  args = goog.array.flatten(args);
-
-  var keys = acgraph.vector.normalizeFill(args)['keys'];
-
-  for (var i = 0; i < keys.length; i++) {
-    keys[i]['color'] = goog.color.hexToRgb(anychart.color.parseColor(keys[i]['color']).hex);
+  for (var i = 0, len = keys.length; i < len; i++) {
+    var key = keys[i];
+    if (!goog.isDef(key['offset']))
+      key['offset'] = !i ? 0 : i == len - 1 ? 1 : i / (len - 1);
+    var color = key['color'];
+    if (goog.isArray(color)) {
+      key['color'] = goog.array.clone(color);
+    } else if (goog.isString(color)) {
+      key['color'] = anychart.color.parseColor(color).hex;
+    }
   }
 
   goog.array.sortObjectsByKey(keys, 'offset');
@@ -111,7 +154,7 @@ anychart.colorScalesModule.Linear.prototype.colors = function(var_args) {
 /**
  * Converts value to color.
  * @param {number} value Value to convert.
- * @return {string} Returns color in hex representation relative passed value.
+ * @return {Object} Returns object of color in hex representation and opacity relative passed value.
  */
 anychart.colorScalesModule.Linear.prototype.valueToColor = function(value) {
   var ratio = this.transform(value);
@@ -128,20 +171,20 @@ anychart.colorScalesModule.Linear.prototype.valueToColor = function(value) {
       }
     }
   }
-  var resultRGBColor;
+  var resultColorObject;
   if (!firstKey) {
-    resultRGBColor = lastKey['color'];
+    resultColorObject = lastKey;
   } else if (!lastKey) {
-    resultRGBColor = firstKey['color'];
+    resultColorObject = firstKey;
   } else {
     var relativeRatio = (ratio - firstKey['offset']) / (lastKey['offset'] - firstKey['offset']);
-    resultRGBColor = anychart.color.blend(
-        /** @type {!goog.color.Rgb} */(lastKey['color']),
-        /** @type {!goog.color.Rgb} */(firstKey['color']),
+    resultColorObject = anychart.color.blend(
+        /** @type {!acgraph.vector.SolidFill} */(lastKey),
+        /** @type {!acgraph.vector.SolidFill} */(firstKey),
         relativeRatio);
   }
 
-  return goog.isArray(resultRGBColor) ? goog.color.rgbArrayToHex(/** @type {!goog.color.Rgb} */(resultRGBColor)) : resultRGBColor.color;
+  return resultColorObject;
 };
 
 
@@ -305,7 +348,11 @@ anychart.colorScalesModule.Linear.prototype.serialize = function() {
   json['ticks'] = this.ticks().serialize();
   json['minorTicks'] = this.minorTicks().serialize();
   json['colors'] = goog.array.map(/** @type {Array.<Object>} */(this.colors()), function(elem) {
-    return goog.color.rgbArrayToHex(/** @type {!goog.color.Rgb} */(elem.color));
+    return {
+      color: elem.color,
+      offset: elem.offset,
+      opacity: elem.opacity
+    };
   });
 
   return json;
