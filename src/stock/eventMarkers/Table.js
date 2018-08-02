@@ -154,6 +154,7 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
       coIterator.reset();
       while (coIterator.advance() && i < toIndex) {
         var currItem;
+        //debugger;
         while (i < toIndex && (currItem = this.data_[i]).key < coIterator.currentKey()) {
           items.push(currItem);
           i++;
@@ -208,22 +209,34 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
       lookups = [];
       firstIndex = 0;
       count = this.data_.length;
+
+      var i = fromIndex;
+      coIterator.reset();
+      var prevKey = NaN;
       var lookup = 0;
-      var from, to;
-      from = isNaN(fromOrNaNForFull) ? -Infinity : fromOrNaNForFull;
-      to = isNaN(toOrNaNForFull) ? +Infinity : toOrNaNForFull;
-      for (var i = 0; i < this.data_.length; i++) {
-        if (this.data_[i].key >= from && this.data_[i].key <= to) {
+      while(coIterator.advance() && i < toIndex) {
+        var currentKey = coIterator.currentKey();
+        var currentIndex = coIterator.currentIndex();
+        var from, to;
+        from = isNaN(fromOrNaNForFull) ? -Infinity : fromOrNaNForFull;
+        to = isNaN(toOrNaNForFull) ? +Infinity : toOrNaNForFull;
+        //for (var i = 0; i < this.data_.length; i++) {
+        if (this.data_[i].key <= currentKey) {
           data.push({
             key: this.data_[i].key,
-            index: i,
+            index: currentIndex,
             items: [this.data_[i]],
-            emIndex: i
+            emIndex: lookup
           });
+          //debugger;
           lookups.push(lookup);
           lookup += 1;
+          i++;
         }
+        //}
       }
+
+
       pointsCount = count;
     }
     this.lastDataCache_ = {
