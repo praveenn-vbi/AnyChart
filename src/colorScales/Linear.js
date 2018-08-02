@@ -62,8 +62,7 @@ anychart.colorScalesModule.Linear.prototype.extractKeys_ = function(var_args) {
     if (goog.isString(arg)) {
       keys.push(acgraph.vector.parseColor(arg, true));
     } else if (goog.isArray(arg)) {
-      var colors = acgraph.vector.normalizeFill(arg)['keys'];
-      return colors;
+      keys.push.apply(keys, acgraph.vector.normalizeFill(arg)['keys']);
     } else if (goog.isObject(arg)) {
       var keysAttr = arg['keys'];
       if (goog.isDef(keysAttr) && goog.isArray(keysAttr)) {
@@ -107,7 +106,7 @@ anychart.colorScalesModule.Linear.prototype.normalizeColors_ = function(var_args
     if (goog.isArray(color)) {
       key['color'] = goog.array.clone(color);
     } else if (goog.isString(color)) {
-      key['color'] = anychart.color.parseColor(color).hex;
+      key['color'] = goog.color.hexToRgb(anychart.color.parseColor(color).hex);
     }
   }
 
@@ -154,7 +153,7 @@ anychart.colorScalesModule.Linear.prototype.colors = function(var_args) {
 /**
  * Converts value to color.
  * @param {number} value Value to convert.
- * @return {Object} Returns object of color in hex representation and opacity relative passed value.
+ * @return {string} Returns color in hex representation relative passed value.
  */
 anychart.colorScalesModule.Linear.prototype.valueToColor = function(value) {
   var ratio = this.transform(value);
@@ -171,20 +170,20 @@ anychart.colorScalesModule.Linear.prototype.valueToColor = function(value) {
       }
     }
   }
-  var resultColorObject;
+  var resultRGBColor;
   if (!firstKey) {
-    resultColorObject = lastKey;
+    resultRGBColor = lastKey['color'];
   } else if (!lastKey) {
-    resultColorObject = firstKey;
+    resultRGBColor = firstKey['color'];
   } else {
     var relativeRatio = (ratio - firstKey['offset']) / (lastKey['offset'] - firstKey['offset']);
-    resultColorObject = anychart.color.blend(
-        /** @type {!acgraph.vector.SolidFill} */(lastKey),
-        /** @type {!acgraph.vector.SolidFill} */(firstKey),
+    resultRGBColor = anychart.color.blend(
+        /** @type {!goog.color.Rgb} */(lastKey['color']),
+        /** @type {!goog.color.Rgb} */(firstKey['color']),
         relativeRatio);
   }
 
-  return resultColorObject;
+  return goog.isArray(resultRGBColor) ? goog.color.rgbArrayToHex(/** @type {!goog.color.Rgb} */(resultRGBColor)) : resultRGBColor.color;
 };
 
 
