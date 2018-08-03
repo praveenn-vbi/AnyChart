@@ -216,32 +216,32 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
       var prevIndex = NaN;
       var lookup = 0;
       //debugger;
-      console.log(fromOrNaNForFull, toOrNaNForFull);
+      //console.log(fromOrNaNForFull, toOrNaNForFull);
+      from = isNaN(fromOrNaNForFull) ? -Infinity : fromOrNaNForFull;
+      to = isNaN(toOrNaNForFull) ? +Infinity : toOrNaNForFull;
       while (coIterator.advance()) {
         var currentKey = coIterator.currentKey();
         var currentIndex = coIterator.currentIndex();
         var from, to;
-        from = isNaN(fromOrNaNForFull) ? -Infinity : fromOrNaNForFull;
-        to = isNaN(toOrNaNForFull) ? +Infinity : toOrNaNForFull;
-        //for (var i = 0; i < this.data_.length; i++) {
         var diff = (currentKey - prevKey) / 2;
         for (var i = 0; i < this.data_.length; i++) {
-          if (((this.data_[i].key < to && this.data_[i].key > from) && this.data_[i].key <= (currentKey - diff) && this.data_[i].key >= (prevKey - diff) && !isNaN(prevKey)) || (currentIndex == coIterator.getRowsCount() && this.data_[i].key <= to && this.data_[i].key > (currentKey - diff))) {
-            console.log('prevIndex: ', prevIndex, 'data_.key: ', this.data_[i].key, 'currentKey: ', currentKey, 'prevKey: ', prevKey, 'diff: ', diff, 'currentIndex: ', currentIndex, 'prevIndex: ', prevIndex);
+          var keyInsideBounds = this.data_[i].key < to && this.data_[i].key > from;
+          var keyInsidePreviousVisible = this.data_[i].key <= (currentKey - diff) && this.data_[i].key >= (prevKey - diff) && !isNaN(prevKey);
+          var keyInsideLastVisible = currentIndex == coIterator.getRowsCount() && this.data_[i].key <= to && this.data_[i].key > (currentKey - diff);
+          //if (((this.data_[i].key < to && this.data_[i].key > from) && this.data_[i].key <= (currentKey - diff) && this.data_[i].key >= (prevKey - diff) && !isNaN(prevKey)) || (currentIndex == coIterator.getRowsCount() && this.data_[i].key <= to && this.data_[i].key > (currentKey - diff))) {
+          if ((keyInsideBounds && keyInsidePreviousVisible) || keyInsideLastVisible) {
             data.push({
               key: this.data_[i].key,
-              index: prevIndex,
+              index: keyInsideLastVisible ? currentIndex : prevIndex,
               items: [this.data_[i]],
               emIndex: lookup
             });
             lookups.push(lookup);
             lookup += 1;
-            //i++;
           }
         }
         prevKey = currentKey;
         prevIndex = currentIndex;
-        //}
       }
 
       pointsCount = count;
