@@ -213,29 +213,36 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
       var i = fromIndex;
       coIterator.reset();
       var prevKey = NaN;
+      var prevIndex = NaN;
       var lookup = 0;
-      while(coIterator.advance() && i < toIndex) {
+      //debugger;
+      console.log(fromOrNaNForFull, toOrNaNForFull);
+      while (coIterator.advance()) {
         var currentKey = coIterator.currentKey();
         var currentIndex = coIterator.currentIndex();
         var from, to;
         from = isNaN(fromOrNaNForFull) ? -Infinity : fromOrNaNForFull;
         to = isNaN(toOrNaNForFull) ? +Infinity : toOrNaNForFull;
         //for (var i = 0; i < this.data_.length; i++) {
-        if (this.data_[i].key <= currentKey) {
-          data.push({
-            key: this.data_[i].key,
-            index: currentIndex,
-            items: [this.data_[i]],
-            emIndex: lookup
-          });
-          //debugger;
-          lookups.push(lookup);
-          lookup += 1;
-          i++;
+        var diff = (currentKey - prevKey) / 2;
+        for (var i = 0; i < this.data_.length; i++) {
+          if (((this.data_[i].key < to && this.data_[i].key > from) && this.data_[i].key <= (currentKey - diff) && this.data_[i].key >= (prevKey - diff) && !isNaN(prevKey)) || (currentIndex == coIterator.getRowsCount() && this.data_[i].key <= to && this.data_[i].key > (currentKey - diff))) {
+            console.log('prevIndex: ', prevIndex, 'data_.key: ', this.data_[i].key, 'currentKey: ', currentKey, 'prevKey: ', prevKey, 'diff: ', diff, 'currentIndex: ', currentIndex, 'prevIndex: ', prevIndex);
+            data.push({
+              key: this.data_[i].key,
+              index: prevIndex,
+              items: [this.data_[i]],
+              emIndex: lookup
+            });
+            lookups.push(lookup);
+            lookup += 1;
+            //i++;
+          }
         }
+        prevKey = currentKey;
+        prevIndex = currentIndex;
         //}
       }
-
 
       pointsCount = count;
     }
@@ -378,7 +385,7 @@ anychart.stockModule.eventMarkers.Table.Iterator.prototype.current = function() 
 };
 
 
-    /**
+/**
  * @param {number} index
  * @return {boolean}
  */
