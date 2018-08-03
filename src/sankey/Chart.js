@@ -74,7 +74,7 @@ anychart.core.settings.populate(anychart.sankeyModule.Chart, anychart.sankeyModu
  */
 anychart.sankeyModule.Chart.OWN_DESCRIPTORS_META = (function() {
   return [
-    ['nodeWidth', anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW],
+    ['nodeWidth', anychart.ConsistencyState.APPEARANCE | anychart.ConsistencyState.BOUNDS, anychart.Signal.NEEDS_REDRAW],
     ['nodePadding', anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW],
     ['levels', anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW],
     ['nodeFill', anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW],
@@ -180,42 +180,51 @@ anychart.sankeyModule.Chart.prototype.isMissing_ = function(from, to, flow) {
 //region Infrastructure
 /**
  * @typedef {{
+ *   id: (number|undefined),
  *   name: !string,
  *   level: !number,
+ *   weight: (number|undefined),
  *   incomeValue: !number,
  *   outcomeValue: !number,
- *   incomeNodes: !Array.<anychart.sankeyModule.Chart.NodeMeta>,
- *   outcomeNodes: !Array.<anychart.sankeyModule.Chart.NodeMeta>,
+ *   dropoffValue: !number,
+ *   incomeNodes: !Array.<anychart.sankeyModule.Chart.Node>,
+ *   outcomeNodes: !Array.<anychart.sankeyModule.Chart.Node>,
  *   incomeValues: !Array.<number>,
  *   outcomeValues: !Array.<number>,
  *   dropoffValues: !Array.<number>,
- *   conflict: boolean
+ *   incomeCoords: Array.<{x: number, y1: number, y2: number}>,
+ *   outcomeCoords: Array.<{x: number, y1: number, y2: number}>,
+ *   conflict: boolean,
+ *   top: (number|undefined),
+ *   right: (number|undefined),
+ *   bottom: (number|undefined),
+ *   left: (number|undefined)
  * }}
  */
-anychart.sankeyModule.Chart.NodeMeta;
+anychart.sankeyModule.Chart.Node;
 
 
 /**
  * @typedef {{
- *   nodes: Array.<string>,
- *   nodeHeightsSum: number,
+ *   nodes: Array.<anychart.sankeyModule.Chart.Node>,
+ *   weightsSum: number,
  *   top: number
  * }}
  */
-anychart.sankeyModule.Chart.LevelMeta;
+anychart.sankeyModule.Chart.Level;
 
 
 /**
  * Update node levels
- * @param {anychart.sankeyModule.Chart.NodeMeta} fromNodeMeta
+ * @param {anychart.sankeyModule.Chart.Node} fromNode
  */
-anychart.sankeyModule.Chart.prototype.shiftNodeLevels = function(fromNodeMeta) {
-  var toNodes = fromNodeMeta.outcomeNodes;
+anychart.sankeyModule.Chart.prototype.shiftNodeLevels = function(fromNode) {
+  var toNodes = fromNode.outcomeNodes;
   for (var i = 0; i < toNodes.length; i++) {
-    var toNodeMeta = toNodes[i];
-    if (fromNodeMeta.level <= toNodeMeta.level) {
-      toNodeMeta.level = fromNodeMeta.level + 1;
-      this.shiftNodeLevels(toNodeMeta);
+    var toNode = toNodes[i];
+    if (fromNode.level <= toNode.level) {
+      toNode.level = fromNode.level + 1;
+      this.shiftNodeLevels(toNode);
     }
   }
 };
@@ -223,66 +232,76 @@ anychart.sankeyModule.Chart.prototype.shiftNodeLevels = function(fromNodeMeta) {
 
 /**
  * Creates flow.
- * @param {anychart.sankeyModule.Chart.NodeMeta} fromNodeMeta
- * @param {anychart.sankeyModule.Chart.NodeMeta} toNodeMeta
+ * @param {anychart.sankeyModule.Chart.Node} fromNode
+ * @param {anychart.sankeyModule.Chart.Node} toNode
  * @param {number} flow
  */
-anychart.sankeyModule.Chart.prototype.createFlow = function(fromNodeMeta, toNodeMeta, flow) {
-  fromNodeMeta.outcomeValue += flow;
-  fromNodeMeta.outcomeValues.push(flow);
-  fromNodeMeta.outcomeNodes.push(toNodeMeta);
+anychart.sankeyModule.Chart.prototype.createFlow = function(fromNode, toNode, flow) {
+  fromNode.outcomeValue += flow;
+  fromNode.outcomeValues.push(flow);
+  fromNode.outcomeNodes.push(toNode);
 
-  toNodeMeta.incomeValue += flow;
-  toNodeMeta.incomeValues.push(flow);
-  toNodeMeta.incomeNodes.push(fromNodeMeta);
-  if (fromNodeMeta.level >= toNodeMeta.level) {
-    toNodeMeta.level = fromNodeMeta.level + 1;
-    this.shiftNodeLevels(toNodeMeta);
+  toNode.incomeValue += flow;
+  toNode.incomeValues.push(flow);
+  toNode.incomeNodes.push(fromNode);
+  if (fromNode.level >= toNode.level) {
+    toNode.level = fromNode.level + 1;
+    this.shiftNodeLevels(toNode);
   }
-  if (toNodeMeta.level > this.lastLevel)
-    this.lastLevel = toNodeMeta.level;
+  if (toNode.level > this.lastLevel)
+    this.lastLevel = toNode.level;
 };
 
 
 /**
  * Creates drop off flow.
- * @param {anychart.sankeyModule.Chart.NodeMeta} fromNodeMeta
+ * @param {anychart.sankeyModule.Chart.Node} fromNodeMeta
  * @param {number} flow
  */
 anychart.sankeyModule.Chart.prototype.createDropOffFlow = function(fromNodeMeta, flow) {
   fromNodeMeta.outcomeValue += flow;
+  fromNodeMeta.dropoffValue += flow;
   fromNodeMeta.dropoffValues.push(flow);
 };
 
 
 /**
  * Calculate node levels.
- * Правила авторасчета левелов.
- * 1) Автоматический расчет идет линейно по заданным данным (0 to length) - это означает,
- * что в голимой теории разный порядок строк может привести к разному порядку нод в левелах
  * @private
  */
 anychart.sankeyModule.Chart.prototype.calculateLevels_ = function() {
-  var from, to, flow;
+  /** @type {!string} */
+  var from;
+
+  /** @type {?string} */
+  var to;
+
+  /** @type {number} */
+  var flow;
 
   /**
-   * Node metas by node name.
-   * @type {Object.<string, anychart.sankeyModule.Chart.NodeMeta>}
+   * Nodes information by node name.
+   * @type {Object.<string, anychart.sankeyModule.Chart.Node>}
    */
-  this.nodeMetas = {};
+  this.nodes = {};
 
   /**
-   * @type {anychart.sankeyModule.Chart.NodeMeta}
+   * @type {anychart.sankeyModule.Chart.Node}
    */
-  var fromNodeMeta;
+  var fromNode;
 
   /**
-   * @type {anychart.sankeyModule.Chart.NodeMeta}
+   * @type {anychart.sankeyModule.Chart.Node}
    */
-  var toNodeMeta;
+  var toNode;
+
+  /**
+   * Number of the last level.
+   * @type {number}
+   */
+  this.lastLevel = -1;
 
   var iterator = this.getIterator().reset();
-  this.lastLevel = -1;
   while (iterator.advance()) {
     from = /** @type {string} */ (iterator.get('from'));
     to = /** @type {string} */ (iterator.get('to'));
@@ -290,93 +309,119 @@ anychart.sankeyModule.Chart.prototype.calculateLevels_ = function() {
     if (this.isMissing_(from, to, flow))
       continue;
 
-    fromNodeMeta = this.nodeMetas[from];
-    if (!fromNodeMeta) {
-      this.nodeMetas[from] = fromNodeMeta = {
+    fromNode = this.nodes[from];
+    if (!fromNode) {
+      this.nodes[from] = fromNode = {
         name: from,
         level: 0,
         incomeValue: NaN,
         outcomeValue: 0,
+        dropoffValue: 0,
         incomeNodes: [],
         outcomeNodes: [],
         incomeValues: [],
         outcomeValues: [],
         dropoffValues: [],
+        incomeCoords: [],
+        outcomeCoords: [],
         conflict: false
       };
     }
     if (to === null) {
-      this.createDropOffFlow(fromNodeMeta, flow);
+      this.createDropOffFlow(fromNode, flow);
     } else {
-      toNodeMeta = this.nodeMetas[to];
-      if (!toNodeMeta) {
-        this.nodeMetas[to] = toNodeMeta = {
-          name: to,
+      toNode = this.nodes[to];
+      if (!toNode) {
+        this.nodes[to] = toNode = {
+          name: /** @type {!string} */ (to),
           level: -1,
           incomeValue: 0,
           outcomeValue: 0,
+          dropoffValue: 0,
           incomeNodes: [],
           outcomeNodes: [],
           incomeValues: [],
           outcomeValues: [],
           dropoffValues: [],
+          incomeCoords: [],
+          outcomeCoords: [],
           conflict: false
         };
       }
-      this.createFlow(fromNodeMeta, toNodeMeta, flow);
+      this.createFlow(fromNode, toNode, flow);
     }
   }
   /**
    * Levels meta.
-   * @type {Array.<anychart.sankeyModule.Chart.LevelMeta>}
+   * @type {Array.<anychart.sankeyModule.Chart.Level>}
    */
   this.levels = [];
 
   this.setAsLast = true;
-  this.maxLevelHeight = 0;
-  this.maxLevel = -1;
+  this.maxLevelWeight = 0;
 
-  for (var nodeName in this.nodeMetas) {
-    var nodeMeta = this.nodeMetas[nodeName];
+  /** @type {number} */
+  var levelNumber;
+
+  /** @type {anychart.sankeyModule.Chart.Level} */
+  var level;
+
+  for (var name in this.nodes) {
+    var node = this.nodes[name];
+
+    var outLength = node.outcomeNodes.length + node.dropoffValues.length;
 
     // place node without outcome nodes at last level
-    if (!nodeMeta.outcomeNodes.length && this.setAsLast)
-      nodeMeta.level = this.lastLevel;
+    if (this.setAsLast && !outLength)
+      node.level = this.lastLevel;
 
     // check whether node in confict
-    if (nodeMeta.incomeNodes.length && (nodeMeta.outcomeNodes.length + nodeMeta.dropoffValues.length)) {
-      nodeMeta.conflict = (nodeMeta.incomeValue != nodeMeta.outcomeValue);
+    if (node.incomeNodes.length && outLength) {
+      node.conflict = (node.incomeValue != node.outcomeValue);
     }
 
-    //first-level node
-    if (isNaN(nodeMeta.incomeValue))
-      nodeMeta.nodeHeight = nodeMeta.outcomeValue;
-    // last level node
-    else if (!(nodeMeta.outcomeNodes.length + nodeMeta.dropoffValues.length))
-      nodeMeta.nodeHeight = nodeMeta.incomeValue;
+    // first-level node
+    if (isNaN(node.incomeValue))
+      node.weight = node.outcomeValue;
+    // last level node (nor outcome nor dropoff)
+    else if (!outLength)
+      node.weight = node.incomeValue;
     // other nodes
     else
-      nodeMeta.nodeHeight = Math.max(nodeMeta.incomeValue, nodeMeta.outcomeValue);
+      node.weight = Math.max(node.incomeValue, node.outcomeValue);
 
-    var level = nodeMeta.level;
-    var levelMeta = this.levels[level];
-    if (!this.levels[level]) {
-      this.levels[level] = levelMeta = {
+    levelNumber = node.level;
+    level = this.levels[levelNumber];
+    if (!this.levels[levelNumber]) {
+      this.levels[levelNumber] = level = {
         nodes: [],
-        nodeHeightsSum: 0,
+        weightsSum: 0,
         top: NaN
       };
     }
-    levelMeta.nodes.push(nodeName);
-    levelMeta.nodeHeightsSum += nodeMeta.nodeHeight;
-    if (levelMeta.nodeHeightsSum > this.maxLevelHeight) {
-      this.maxLevelHeight = levelMeta.nodeHeightsSum;
-      this.maxLevel = level;
+    level.nodes.push(node);
+    level.weightsSum += node.weight;
+    // calculating max level weight
+    if (level.weightsSum > this.maxLevelWeight) {
+      this.maxLevelWeight = level.weightsSum;
     }
   }
 
-  console.log(this.levels);
-  console.log(this.maxLevel, this.maxLevelHeight);
+  this.maxNodesCount = 0;
+  this.maxLevel = 0;
+  var linearId = 0;
+  for (var i = 0; i < this.levels.length; i++) {
+    level = this.levels[i];
+
+    var nodesLength = level.nodes.length;
+    if ((level.weightsSum == this.maxLevelWeight) && (nodesLength > this.maxNodesCount)) {
+      this.maxNodesCount = nodesLength;
+      this.maxLevel = i;
+    }
+    for (var j = 0; j < nodesLength; j++) {
+      level.nodes[j].id = linearId++;
+    }
+  }
 };
 
 
@@ -384,6 +429,7 @@ anychart.sankeyModule.Chart.prototype.calculateLevels_ = function() {
 anychart.sankeyModule.Chart.prototype.calculate = function() {
   if (this.hasInvalidationState(anychart.ConsistencyState.SANKEY_DATA)) {
     this.calculateLevels_();
+    this.invalidate(anychart.ConsistencyState.BOUNDS);
     this.markConsistent(anychart.ConsistencyState.SANKEY_DATA);
   }
 };
@@ -409,8 +455,38 @@ anychart.sankeyModule.Chart.prototype.unhover = function() {
 };
 
 
+/** @inheritDoc */
+anychart.sankeyModule.Chart.prototype.getSeriesStatus = function() {
+
+};
+
+
+/** @inheritDoc */
+anychart.sankeyModule.Chart.prototype.getAllSeries = function() {
+  return [];
+};
+
+
 //endregion
 //region Drawing
+/**
+ * Calculate coords for flows.
+ * @param {Array.<number>} values Flow values
+ * @param {number} x
+ * @param {number} top
+ * @return {Array}
+ */
+anychart.sankeyModule.Chart.prototype.calculateCoords = function(values, x, top) {
+  var rv = [];
+  for (var i = 0; i < values.length; i++) {
+    rv.push({
+      x: x,
+      y1: top,
+      y2: top += values[i] * this.weightAspect
+    });
+  }
+  return rv;
+};
 
 
 /** @inheritDoc */
@@ -420,10 +496,6 @@ anychart.sankeyModule.Chart.prototype.drawContent = function(bounds) {
 
   // calculates everything that can be calculated from data
   this.calculate();
-
-  // if (!this.hoverRect_) {
-  //   this.hoverRect_ = this.rootElement.path().zIndex(1).stroke(null).fill(null);
-  // }
 
   this.rootElement.removeChildren();
 
@@ -436,42 +508,173 @@ anychart.sankeyModule.Chart.prototype.drawContent = function(bounds) {
     var levelsCount = this.levels.length;
     var levelWidth = bounds.width / levelsCount;
 
-    var nodePadding = /** @type {number} */ (this.getOption('nodePadding')) || 10;
-    var nodeWidth = /** @type {string|number} */ (this.getOption('nodeWidth')) || '20%';
+    var baseNodePadding = /** @type {number} */ (this.getOption('nodePadding')) || 20;
+    var nodeWidth = /** @type {string|number} */ (this.getOption('nodeWidth')) || '12%';
     nodeWidth = anychart.utils.normalizeSize(nodeWidth, levelWidth);
-    var maxLevelNodesCount = this.levels[this.maxLevel].nodes.length;
+    var dropOffPadding = nodeWidth * 0.3;
 
-    var aspect = (bounds.height - (maxLevelNodesCount - 1) * nodePadding) / this.maxLevelHeight;
+    // if we have dropoff on last node we should count it in calculations to show it correctly
+    var lastNodeDropOffPadding = this.levels[this.maxLevel].nodes[this.maxNodesCount - 1].dropoffValue ? dropOffPadding : 0;
+    this.weightAspect = (bounds.height - (this.maxNodesCount - 1) * baseNodePadding - lastNodeDropOffPadding) / this.maxLevelWeight;
 
     var nodesPerLevel;
+    var levelPadding = baseNodePadding;
 
-    for (var i = 0; i < this.levels.length; i++) {
+
+    /**
+     * Default ascending compare function to sort nodes/values for
+     * better user experience on drawing flows.
+     * @param {anychart.sankeyModule.Chart.Node} node1
+     * @param {anychart.sankeyModule.Chart.Node} node2
+     * @return {number}
+     */
+    var nodeCompareFunction = function(node1, node2) {
+      return node1.id - node2.id;
+    };
+
+    var i, j;
+    for (i = 0; i < this.levels.length; i++) {
       level = this.levels[i];
       nodesPerLevel = level.nodes.length;
-      var height = (nodesPerLevel - 1) * nodePadding + level.nodeHeightsSum * aspect;
+      var pixelHeight = level.weightsSum * this.weightAspect;
+      lastNodeDropOffPadding = level.nodes[nodesPerLevel - 1].dropoffValue ? dropOffPadding : 0;
+
+      var height = (nodesPerLevel - 1) * levelPadding + pixelHeight + lastNodeDropOffPadding;
+      if (height > bounds.height) {
+        height = bounds.height;
+        levelPadding = (height - pixelHeight - lastNodeDropOffPadding) / (nodesPerLevel - 1);
+      }
       level.top = bounds.top + (bounds.height - height) / 2;
 
       var lastTop = level.top;
-      for (var j = 0; j < level.nodes.length; j++) {
-        var nodeMeta = this.nodeMetas[level.nodes[j]];
-        var nodeHeight = nodeMeta.nodeHeight * aspect;
+      var index;
+      for (j = 0; j < level.nodes.length; j++) {
+        var node = level.nodes[j];
+        var nodeHeight = node.weight * this.weightAspect;
 
         var path = this.rootElement.path().zIndex(0).fill(null).stroke('black');
-        var left = (i * levelWidth) + (levelWidth - nodeWidth) / 2;
-        var top = lastTop;
+        var nodeLeft = (i * levelWidth) + (levelWidth - nodeWidth) / 2;
+        var nodeTop = lastTop;
+        var nodeRight = nodeLeft + nodeWidth;
+        var nodeBottom = nodeTop + nodeHeight;
+
+        node.top = nodeTop;
+        node.right = nodeRight;
+        node.bottom = nodeBottom;
+        node.left = nodeLeft;
+
+        var sortedNodes, sortedValues, k;
+        if (!isNaN(node.incomeValue) && node.incomeValue) {
+          sortedNodes = Array.prototype.slice.call(node.incomeNodes, 0);
+          goog.array.sort(sortedNodes, nodeCompareFunction);
+          sortedValues = [];
+          for (k = 0; k < sortedNodes.length; k++) {
+            index = goog.array.indexOf(node.incomeNodes, sortedNodes[k]);
+            sortedValues.push(node.incomeValues[index]);
+          }
+
+          node.incomeValues = sortedValues;
+          node.incomeNodes = sortedNodes;
+
+          node.incomeCoords = this.calculateCoords(node.incomeValues, nodeLeft, nodeTop);
+        }
+
+        if (node.outcomeValue) {
+          sortedNodes = Array.prototype.slice.call(node.outcomeNodes, 0);
+          goog.array.sort(sortedNodes, nodeCompareFunction);
+          sortedValues = [];
+          for (k = 0; k < sortedNodes.length; k++) {
+            index = goog.array.indexOf(node.outcomeNodes, sortedNodes[k]);
+            sortedValues.push(node.outcomeValues[index]);
+          }
+
+          node.outcomeValues = sortedValues;
+          node.outcomeNodes = sortedNodes;
+
+          node.outcomeCoords = this.calculateCoords(node.outcomeValues, nodeRight, nodeTop);
+        }
 
         path
-            .moveTo(left, top)
-            .lineTo(left + nodeWidth, top)
-            .lineTo(left + nodeWidth, top + nodeHeight)
-            .lineTo(left, top + nodeHeight)
-            .lineTo(left, top);
+            .moveTo(nodeLeft, nodeTop)
+            .lineTo(nodeRight, nodeTop)
+            .lineTo(nodeRight, nodeBottom)
+            .lineTo(nodeLeft, nodeBottom)
+            .lineTo(nodeLeft, nodeTop)
+            .close();
 
-        lastTop = top + nodeHeight + nodePadding;
+        // just for presentation
+        var text = this.rootElement.text().zIndex(1);
+        text.text(node.name + '\n' + node.weight);
+        var textBounds = text.getBounds();
+        var textWidth = textBounds.width;
+        var textHeight = textBounds.height;
+        var x = nodeLeft + nodeWidth / 2 - textWidth / 2;
+        var y = nodeTop + nodeHeight / 2 - textHeight / 2;
+        text.x(x).y(y);
+
+        lastTop = nodeBottom + levelPadding;
+      }
+    }
+
+    var curvy = 0.33 * (bounds.width - nodeWidth) / (this.levels.length - 1);
+
+    for (var name in this.nodes) {
+      var fromNode = this.nodes[name];
+
+      var len = fromNode.outcomeNodes.length;
+      for (i = 0; i < len; i++) {
+        var fromCoords = fromNode.outcomeCoords[i];
+        var toNode = fromNode.outcomeNodes[i];
+
+        index = goog.array.findIndex(toNode.incomeNodes, function(item) {
+          return item.name == name;
+        });
+        var toCoords = toNode.incomeCoords[index];
+
+        path = this.rootElement.path().zIndex(1).fill('gray 0.3').stroke(null);
+        path
+            .moveTo(fromCoords.x, fromCoords.y1)
+            .curveTo(fromCoords.x + curvy, fromCoords.y1, toCoords.x - curvy, toCoords.y1, toCoords.x, toCoords.y1)
+            .lineTo(toCoords.x, toCoords.y2)
+            .curveTo(toCoords.x - curvy, toCoords.y2, fromCoords.x + curvy, fromCoords.y2, fromCoords.x, fromCoords.y2)
+            .lineTo(fromCoords.x, fromCoords.y1)
+            .close();
+
+        /*path
+            .moveTo(fromCoords.x, fromCoords.y1)
+            .lineTo(toCoords.x, toCoords.y1)
+            .lineTo(toCoords.x, toCoords.y2)
+            .lineTo(fromCoords.x, fromCoords.y2)
+            .lineTo(fromCoords.x, fromCoords.y1)
+            .close();*/
+      }
+
+      if (fromNode.dropoffValues.length) {
+        x = fromNode.right;
+        height = fromNode.dropoffValue * this.weightAspect;
+        var y2 = fromNode.bottom;
+        var y1 = y2 - height;
+        var gradient = {
+          angle: -90,
+          keys: [
+            {color: 'red', offset: 0},
+            {color: 'white', offset: 1}
+          ]
+        };
+        path = this.rootElement.path().zIndex(1).fill(gradient).stroke(null);
+
+        path
+            .moveTo(x, y1)
+            .arcTo(nodeWidth / 2, height, -90, 90)
+            .lineTo(x + nodeWidth / 4, y2 + dropOffPadding)
+            // .lineTo(x, y2 + 0.3 * height)
+            .lineTo(x, y2)
+            .close();
       }
     }
 
     console.log(this.levels);
+    console.log(this.nodes);
 
     this.markConsistent(anychart.ConsistencyState.BOUNDS);
   }
