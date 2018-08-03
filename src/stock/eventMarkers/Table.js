@@ -210,7 +210,6 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
       firstIndex = 0;
       count = this.data_.length;
 
-      var i = fromIndex;
       coIterator.reset();
       var prevKey = NaN;
       var prevIndex = NaN;
