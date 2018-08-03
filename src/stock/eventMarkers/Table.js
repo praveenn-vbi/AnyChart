@@ -215,8 +215,6 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
       var prevKey = NaN;
       var prevIndex = NaN;
       var lookup = 0;
-      //debugger;
-      //console.log(fromOrNaNForFull, toOrNaNForFull);
       from = isNaN(fromOrNaNForFull) ? -Infinity : fromOrNaNForFull;
       to = isNaN(toOrNaNForFull) ? +Infinity : toOrNaNForFull;
       while (coIterator.advance()) {
@@ -228,7 +226,6 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
           var keyInsideBounds = this.data_[i].key < to && this.data_[i].key > from;
           var keyInsidePreviousVisible = this.data_[i].key <= (currentKey - diff) && this.data_[i].key >= (prevKey - diff) && !isNaN(prevKey);
           var keyInsideLastVisible = currentIndex == coIterator.getRowsCount() && this.data_[i].key <= to && this.data_[i].key > (currentKey - diff);
-          //if (((this.data_[i].key < to && this.data_[i].key > from) && this.data_[i].key <= (currentKey - diff) && this.data_[i].key >= (prevKey - diff) && !isNaN(prevKey)) || (currentIndex == coIterator.getRowsCount() && this.data_[i].key <= to && this.data_[i].key > (currentKey - diff))) {
           if ((keyInsideBounds && keyInsidePreviousVisible) || keyInsideLastVisible) {
             data.push({
               key: this.data_[i].key,
