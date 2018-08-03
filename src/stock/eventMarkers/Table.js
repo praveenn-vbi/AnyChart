@@ -215,23 +215,21 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
       var prevKey = NaN;
       var prevIndex = NaN;
       var lookup = 0;
-      var firstIndex2 = NaN;
+      var firstIndexInSeries = NaN;
       from = isNaN(fromOrNaNForFull) ? -Infinity : fromOrNaNForFull;
       to = isNaN(toOrNaNForFull) ? +Infinity : toOrNaNForFull;
       while (coIterator.advance()) {
         var currentKey = coIterator.currentKey();
         var currentIndex = coIterator.currentIndex();
-        if (isNaN(firstIndex2))
-          firstIndex2 = currentIndex;
+        if (isNaN(firstIndexInSeries))
+          firstIndexInSeries = currentIndex;
         var from, to;
         var diff = (currentKey - prevKey) / 2;
         for (var i = 0; i < this.data_.length; i++) {
           var keyInsideBounds = this.data_[i].key < to && this.data_[i].key > from;
-          var keyInsideFirstVisible = (prevIndex == firstIndex2) && this.data_[i].key >= from && this.data_[i].key < (prevKey + diff);
-          var keyInsidePreviousVisible = false;//this.data_[i].key <= (currentKey - diff) && this.data_[i].key >= (prevKey - diff) && !isNaN(prevKey);
+          var keyInsideFirstVisible = (prevIndex == firstIndexInSeries) && this.data_[i].key >= from && this.data_[i].key < (prevKey + diff);
           var keyInsideCurrent = this.data_[i].key <= (currentKey + diff) && this.data_[i].key >= (currentKey - diff) && !isNaN(prevKey);
-          var keyInsideLastVisible = false;//currentIndex == coIterator.getRowsCount() && this.data_[i].key <= to && this.data_[i].key > (currentKey - diff);
-          if (keyInsideBounds && (keyInsideFirstVisible || keyInsideCurrent || keyInsidePreviousVisible || keyInsideLastVisible)) {
+          if (keyInsideBounds && (keyInsideFirstVisible || keyInsideCurrent)) {
             data.push({
               key: this.data_[i].key,
               index: keyInsideCurrent ? currentIndex : prevIndex,
