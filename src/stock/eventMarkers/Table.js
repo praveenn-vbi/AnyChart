@@ -227,7 +227,7 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
         for (var i = 0; i < this.data_.length; i++) {
           var keyInsideBounds = this.data_[i].key <= to && this.data_[i].key >= from;
           var keyInsideFirstVisible = (prevIndex == firstIndexInSeries) && this.data_[i].key < (prevKey + diff);
-          var keyInsideCurrent = this.data_[i].key <= (currentKey + diff) && this.data_[i].key >= (currentKey - diff) && !isNaN(prevKey);
+          var keyInsideCurrent = this.data_[i].key <= (currentKey + diff) && this.data_[i].key >= (currentKey - diff);
           if (keyInsideBounds && (keyInsideFirstVisible || keyInsideCurrent)) {
             data.push({
               key: this.data_[i].key,
