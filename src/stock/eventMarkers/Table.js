@@ -205,21 +205,19 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
       pointsCount = coIterator.getRowsCount();
     } else {
       firstIndex = 0;
-      count = this.data_.length;
 
       coIterator.reset();
       var prevKey = NaN;
       var prevIndex = NaN;
       var lookup = 0;
       var firstIndexInSeries = NaN;
-      from = isNaN(fromOrNaNForFull) ? -Infinity : fromOrNaNForFull;
-      to = isNaN(toOrNaNForFull) ? +Infinity : toOrNaNForFull;
+      var from = isNaN(fromOrNaNForFull) ? -Infinity : fromOrNaNForFull;
+      var to = isNaN(toOrNaNForFull) ? +Infinity : toOrNaNForFull;
       while (coIterator.advance()) {
         var currentKey = coIterator.currentKey();
         var currentIndex = coIterator.currentIndex();
         if (isNaN(firstIndexInSeries))
           firstIndexInSeries = currentIndex;
-        var from, to;
         var diff = (currentKey - prevKey) / 2;
         for (var i = 0; i < this.data_.length; i++) {
           var keyInsideBounds = this.data_[i].key <= to && this.data_[i].key >= from;
@@ -234,6 +232,7 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
             });
             lookups.push(lookup);
             lookup += 1;
+            count = lookup;
           }
         }
         prevKey = currentKey;
