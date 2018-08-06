@@ -1946,7 +1946,7 @@ anychart.core.Axis.prototype.draw = function() {
     var labels = this.labels();
     if (!labels.container()) labels.container(/** @type {acgraph.vector.ILayer} */(this.container()));
     labels.parentBounds(/** @type {anychart.math.Rect} */(this.parentBounds()));
-    labels.invalidate(anychart.ConsistencyState.ALL);
+    ////labels.invalidate(anychart.ConsistencyState.ALL);
     // labels.clear();
 
     var minorLabels = this.minorLabels();

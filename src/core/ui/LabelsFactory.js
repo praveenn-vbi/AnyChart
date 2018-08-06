@@ -754,7 +754,7 @@ anychart.core.ui.LabelsFactory.prototype.draw = function() {
 
 anychart.core.ui.LabelsFactory.prototype.parentBounds = function(bounds) {
   if (goog.isDef(bounds)) {
-    console.log('Bounds came: ', bounds);
+    //console.log('Bounds came: ', bounds);
     //debugger;
   }
   return anychart.core.ui.LabelsFactory.base(this, 'parentBounds', bounds);
@@ -939,6 +939,7 @@ anychart.core.ui.LabelsFactory.prototype.getDimensionInternal = function(outerBo
 
   outerBounds.left = position.x;
   outerBounds.top = position.y;
+//  console.log(outerBounds);
 
   return /** @type {anychart.math.Rect} */(outerBounds);
 };
@@ -2186,7 +2187,7 @@ anychart.core.ui.LabelsFactory.Label.prototype.drawLabel = function(bounds, pare
 
   bounds.left = position.x;
   bounds.top = position.y;
-  console.log(bounds);
+  //console.log(bounds);
 
   this.textElement.x(/** @type {number} */(this.textX + position.x)).y(/** @type {number} */(this.textY + position.y));
 };
@@ -2439,6 +2440,7 @@ anychart.core.ui.LabelsFactory.Label.prototype.draw = function() {
       autoWidth = true;
     }
 
+    // on shrink this one fails
     if (goog.isDef(textWidth)) this.textElement.width(textWidth);
 
     //calculate text height and outer height
