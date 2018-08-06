@@ -213,9 +213,10 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
       var firstIndexInSeries = NaN;
       var from = isNaN(fromOrNaNForFull) ? -Infinity : fromOrNaNForFull;
       var to = isNaN(toOrNaNForFull) ? +Infinity : toOrNaNForFull;
+      var currentKey, currentIndex;
       while (coIterator.advance()) {
-        var currentKey = coIterator.currentKey();
-        var currentIndex = coIterator.currentIndex();
+        currentKey = coIterator.currentKey();
+        currentIndex = coIterator.currentIndex();
         if (isNaN(firstIndexInSeries))
           firstIndexInSeries = currentIndex;
         var diff = (currentKey - prevKey) / 2;
@@ -237,6 +238,23 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
         }
         prevKey = currentKey;
         prevIndex = currentIndex;
+      }
+      // this fixes case when eventMarker is inside one visible point or between 2 points and neither one is visible
+      if ((prevKey == currentKey && prevIndex == firstIndexInSeries) || isNaN(currentKey)) {
+        for (var i = 0; i < this.data_.length; i++) {
+          var keyInsideBounds = this.data_[i].key <= to && this.data_[i].key >= from;
+          if (keyInsideBounds) {
+            data.push({
+              key: this.data_[i].key,
+              index: currentIndex ? currentIndex : lookup,
+              items: [this.data_[i]],
+              emIndex: lookup
+            });
+            lookups.push(lookup);
+            lookup += 1;
+            count = lookup;
+          }
+        }
       }
 
       pointsCount = count;
