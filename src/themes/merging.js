@@ -1084,7 +1084,8 @@ anychart.themes.merging.mergingMap_ = (function() {
         'resource',
         'mekko',
         'venn',
-        'sunburst'
+        'sunburst',
+        'sankey'
       ]
     },
     {

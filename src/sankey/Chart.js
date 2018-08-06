@@ -36,7 +36,8 @@ anychart.sankeyModule.Chart.prototype.SUPPORTED_SIGNALS = anychart.core.Separate
  */
 anychart.sankeyModule.Chart.prototype.SUPPORTED_CONSISTENCY_STATES =
     anychart.core.SeparateChart.prototype.SUPPORTED_CONSISTENCY_STATES |
-    anychart.ConsistencyState.SANKEY_DATA;
+    anychart.ConsistencyState.SANKEY_DATA |
+    anychart.ConsistencyState.APPEARANCE;
 
 
 //endregion
@@ -468,6 +469,186 @@ anychart.sankeyModule.Chart.prototype.getAllSeries = function() {
 
 
 //endregion
+//region Coloring
+/**
+ * Getter/setter for palette.
+ * @param {(anychart.palettes.RangeColors|anychart.palettes.DistinctColors|Object|Array.<string>)=} opt_value .
+ * @return {!(anychart.palettes.RangeColors|anychart.palettes.DistinctColors|anychart.sankeyModule.Chart)} .
+ */
+anychart.sankeyModule.Chart.prototype.palette = function(opt_value) {
+  if (anychart.utils.instanceOf(opt_value, anychart.palettes.RangeColors)) {
+    this.setupPalette_(anychart.palettes.RangeColors, /** @type {anychart.palettes.RangeColors} */(opt_value));
+    return this;
+  } else if (anychart.utils.instanceOf(opt_value, anychart.palettes.DistinctColors)) {
+    this.setupPalette_(anychart.palettes.DistinctColors, /** @type {anychart.palettes.DistinctColors} */(opt_value));
+    return this;
+  } else if (goog.isObject(opt_value) && opt_value['type'] == 'range') {
+    this.setupPalette_(anychart.palettes.RangeColors);
+  } else if (goog.isObject(opt_value) || this.palette_ == null)
+    this.setupPalette_(anychart.palettes.DistinctColors);
+
+  if (goog.isDef(opt_value)) {
+    this.palette_.setup(opt_value);
+    return this;
+  }
+
+  return /** @type {!(anychart.palettes.RangeColors|anychart.palettes.DistinctColors)} */(this.palette_);
+};
+
+
+/**
+ * @param {Function} cls Palette constructor.
+ * @param {(anychart.palettes.RangeColors|anychart.palettes.DistinctColors)=} opt_cloneFrom Settings to clone from.
+ * @private
+ */
+anychart.sankeyModule.Chart.prototype.setupPalette_ = function(cls, opt_cloneFrom) {
+  if (anychart.utils.instanceOf(this.palette_, cls)) {
+    if (opt_cloneFrom)
+      this.palette_.setup(opt_cloneFrom);
+  } else {
+    // we dispatch only if we replace existing palette.
+    var doDispatch = !!this.palette_;
+    goog.dispose(this.palette_);
+    this.palette_ = new cls();
+    if (opt_cloneFrom)
+      this.palette_.setup(opt_cloneFrom);
+    this.palette_.listenSignals(this.paletteInvalidated_, this);
+    if (doDispatch)
+      this.invalidate(anychart.ConsistencyState.APPEARANCE | anychart.ConsistencyState.CHART_LEGEND, anychart.Signal.NEEDS_REDRAW);
+  }
+};
+
+
+/**
+ * Internal palette invalidation handler.
+ * @param {anychart.SignalEvent} event Event object.
+ * @private
+ */
+anychart.sankeyModule.Chart.prototype.paletteInvalidated_ = function(event) {
+  if (event.hasSignal(anychart.Signal.NEEDS_REAPPLICATION)) {
+    this.invalidate(anychart.ConsistencyState.APPEARANCE | anychart.ConsistencyState.CHART_LEGEND, anychart.Signal.NEEDS_REDRAW);
+  }
+};
+
+
+anychart.sankeyModule.Chart.colorResolversCache = {};
+
+
+anychart.sankeyModule.Chart.getColorResolver = function(colorName, colorType, chart) {
+  if (!colorName) return anychart.color.getNullColor;
+  var hash = colorType + '|' + colorName;
+  var result = anychart.sankeyModule.Chart.colorResolversCache[hash];
+  if (!result) {
+    var normalizerFunc;
+    switch (colorType) {
+      case anychart.enums.ColorType.STROKE:
+        normalizerFunc = anychart.core.settings.strokeOrFunctionSimpleNormalizer;
+        break;
+      case anychart.enums.ColorType.HATCH_FILL:
+        normalizerFunc = anychart.core.settings.hatchFillOrFunctionSimpleNormalizer;
+        break;
+      default:
+      case anychart.enums.ColorType.FILL:
+        normalizerFunc = anychart.core.settings.fillOrFunctionSimpleNormalizer;
+        break;
+    }
+    anychart.sankeyModule.Chart.colorResolversCache[hash] = result = goog.partial(anychart.sankeyModule.Chart.getColor,
+        colorName, normalizerFunc, colorType == anychart.enums.ColorType.HATCH_FILL, chart);
+  }
+  return result;
+};
+
+
+/**
+ * Returns normalized color.
+ * @param {string} colorName
+ * @param {Function} normalizer
+ * @param {boolean} isHatchFill
+ * @param {anychart.sankeyModule.Chart} chart
+ * @param {(anychart.PointState|number)} state
+ * @param {acgraph.vector.Path} path
+ * @return {acgraph.vector.Fill|acgraph.vector.Stroke|acgraph.vector.PatternFill}
+ */
+anychart.sankeyModule.Chart.getColor = function(colorName, normalizer, isHatchFill, chart, state, path) {
+  var context, stateColor;
+  if (state != anychart.PointState.NORMAL) {
+    stateColor = chart.resolveOption(colorName, state, normalizer);
+    if (isHatchFill && stateColor == true)
+      stateColor = normalizer(chart.getAutoHatchFill());
+    if (goog.isDef(stateColor)) {
+      if (!goog.isFunction(stateColor))
+        return /** @type {acgraph.vector.Fill|acgraph.vector.Stroke|acgraph.vector.PatternFill} */(stateColor);
+      else if (isHatchFill) {
+        context = chart.getHatchFillResolutionContext();
+        return normalizer(stateColor.call(context, context));
+      }
+    }
+  }
+
+  var color = chart.resolveOption(colorName, 0, normalizer);
+
+  if (isHatchFill && color == true)
+    color = normalizer(chart.getAutoHatchFill());
+
+  if (goog.isFunction(color)) {
+    context = isHatchFill ?
+        chart.getHatchFillResolutionContext() :
+        chart.getColorResolutionContext(path);
+    color = color.call(context, context);
+  }
+  if (stateColor) {
+    context = chart.getColorResolutionContext();
+    color = normalizer(stateColor.call(context, context));
+  }
+  return /** @type {acgraph.vector.Fill|acgraph.vector.Stroke|acgraph.vector.PatternFill} */(color);
+};
+
+
+anychart.sankeyModule.Chart.prototype.resolveOption = function(colorName, state, normalizer) {
+  var option = this.getOption(colorName) || this.getOption('nodeFill');
+  return normalizer(option);
+};
+
+
+anychart.sankeyModule.Chart.prototype.getColorResolutionContext = function(path) {
+  var from, to;
+  var tag = path.tag;
+  var type = tag.type;
+  if (type == anychart.sankeyModule.Chart.ElementType.NODE) {
+    var node = this.nodes[tag.name];
+    return {
+      'id': node.id,
+      'sourceColor': this.palette().itemAt(node.id)
+    };
+  } else if (type == anychart.sankeyModule.Chart.ElementType.FLOW) {
+    from = tag.from;
+    to = tag.to;
+    return {
+      'from': from,
+      'to': to,
+      'sourceColor': this.palette().itemAt(this.nodes[from].id)
+    };
+  } else {
+    from = tag.from;
+    return {
+      'from': from.name,
+      'sourceColor': this.palette().itemAt(from.id)
+    };
+  }
+};
+
+anychart.sankeyModule.Chart.prototype.getAutoHatchFill = function() {
+  //TODO(AntonKagakin): Up on hathc fill implementation
+  return /** @type {acgraph.vector.HatchFill} */ ('noen');
+};
+
+
+anychart.sankeyModule.Chart.prototype.getHatchFillResolutionContext = function() {
+  return {};
+};
+
+
+//endregion
 //region Drawing
 /**
  * Calculate coords for flows.
@@ -489,6 +670,14 @@ anychart.sankeyModule.Chart.prototype.calculateCoords = function(values, x, top)
 };
 
 
+anychart.sankeyModule.Chart.ElementType = {
+  NODE: 'node',
+  FLOW: 'flow',
+  CONFLICT: 'conflict',
+  DROPOFF: 'dropoff'
+};
+
+
 /** @inheritDoc */
 anychart.sankeyModule.Chart.prototype.drawContent = function(bounds) {
   if (this.isConsistent())
@@ -500,6 +689,7 @@ anychart.sankeyModule.Chart.prototype.drawContent = function(bounds) {
   this.rootElement.removeChildren();
 
   var nodePaths = [];
+  var conflictPaths = [];
   var flowPaths = [];
   var dropoffPaths = [];
 
@@ -552,7 +742,17 @@ anychart.sankeyModule.Chart.prototype.drawContent = function(bounds) {
         var node = level.nodes[j];
         var nodeHeight = node.weight * this.weightAspect;
 
-        var path = this.rootElement.path().zIndex(0).fill(null).stroke('black');
+        var path = this.rootElement.path().zIndex(2).fill(null).stroke('black');
+        if (node.conflict)
+          conflictPaths.push(path);
+        else
+          nodePaths.push(path);
+
+        path.tag = {
+          type: anychart.sankeyModule.Chart.ElementType.NODE,
+          name: node.name,
+          id: node.id
+        };
         var nodeLeft = (i * levelWidth) + (levelWidth - nodeWidth) / 2;
         var nodeTop = lastTop;
         var nodeRight = nodeLeft + nodeWidth;
@@ -603,7 +803,7 @@ anychart.sankeyModule.Chart.prototype.drawContent = function(bounds) {
             .close();
 
         // just for presentation
-        var text = this.rootElement.text().zIndex(1);
+        var text = this.rootElement.text().zIndex(3);
         text.text(node.name + '\n' + node.weight);
         var textBounds = text.getBounds();
         var textWidth = textBounds.width;
@@ -632,6 +832,12 @@ anychart.sankeyModule.Chart.prototype.drawContent = function(bounds) {
         var toCoords = toNode.incomeCoords[index];
 
         path = this.rootElement.path().zIndex(1).fill('gray 0.3').stroke(null);
+        path.tag = {
+          type: anychart.sankeyModule.Chart.ElementType.FLOW,
+          from: fromNode.name,
+          to: toNode.name
+        };
+        flowPaths.push(path);
         path
             .moveTo(fromCoords.x, fromCoords.y1)
             .curveTo(fromCoords.x + curvy, fromCoords.y1, toCoords.x - curvy, toCoords.y1, toCoords.x, toCoords.y1)
@@ -662,6 +868,11 @@ anychart.sankeyModule.Chart.prototype.drawContent = function(bounds) {
           ]
         };
         path = this.rootElement.path().zIndex(1).fill(gradient).stroke(null);
+        path.tag = {
+          type: anychart.sankeyModule.Chart.ElementType.DROPOFF,
+          from: fromNode.name
+        };
+        dropoffPaths.push(path);
 
         path
             .moveTo(x, y1)
@@ -676,12 +887,62 @@ anychart.sankeyModule.Chart.prototype.drawContent = function(bounds) {
     console.log(this.levels);
     console.log(this.nodes);
 
+    this.invalidate(anychart.ConsistencyState.APPEARANCE);
     this.markConsistent(anychart.ConsistencyState.BOUNDS);
   }
 
-
   if (this.hasInvalidationState(anychart.ConsistencyState.APPEARANCE)) {
-    //
+    var flowFill = this.getOption('flowFill');
+    var flowStroke = this.getOption('flowStroke');
+
+    var dropFill = this.getOption('dropFill');
+    var dropStroke = this.getOption('dropStroke');
+
+    var conflictFill = this.getOption('conflictFill') || 'red 0.3';
+    var conflictStroke = this.getOption('conflictStroke') || 'darkred 0.3';
+
+    var fillResolver, strokeResolver, fill, stroke;
+
+    fillResolver = anychart.sankeyModule.Chart.getColorResolver('nodeFill', anychart.enums.ColorType.FILL, this);
+    strokeResolver = anychart.sankeyModule.Chart.getColorResolver('nodeStroke', anychart.enums.ColorType.STROKE, this);
+    for (i = 0; i < nodePaths.length; i++) {
+      path = nodePaths[i];
+      fill = fillResolver(0, path);
+      stroke = strokeResolver(0, path);
+      nodePaths[i].fill(fill);
+      nodePaths[i].stroke(stroke);
+    }
+
+    fillResolver = anychart.sankeyModule.Chart.getColorResolver('flowFill', anychart.enums.ColorType.FILL, this);
+    strokeResolver = anychart.sankeyModule.Chart.getColorResolver('flowStroke', anychart.enums.ColorType.STROKE, this);
+    for (i = 0; i < flowPaths.length; i++) {
+      path = flowPaths[i];
+      fill = fillResolver(0, path);
+      stroke = strokeResolver(0, path);
+      flowPaths[i].fill(fill);
+      flowPaths[i].stroke(stroke);
+    }
+
+    fillResolver = anychart.sankeyModule.Chart.getColorResolver('dropFill', anychart.enums.ColorType.FILL, this);
+    strokeResolver = anychart.sankeyModule.Chart.getColorResolver('dropStroke', anychart.enums.ColorType.STROKE, this);
+    for (i = 0; i < dropoffPaths.length; i++) {
+      path = dropoffPaths[i];
+      fill = fillResolver(0, path);
+      stroke = strokeResolver(0, path);
+      dropoffPaths[i].fill(fill);
+      dropoffPaths[i].stroke(stroke);
+    }
+
+    fillResolver = anychart.sankeyModule.Chart.getColorResolver('conflictFill', anychart.enums.ColorType.FILL, this);
+    strokeResolver = anychart.sankeyModule.Chart.getColorResolver('conflictStroke', anychart.enums.ColorType.STROKE, this);
+    for (i = 0; i < conflictPaths.length; i++) {
+      path = conflictPaths[i];
+      fill = fillResolver(0, path);
+      stroke = strokeResolver(0, path);
+      conflictPaths[i].fill(fill);
+      conflictPaths[i].stroke(stroke);
+    }
+
     this.markConsistent(anychart.ConsistencyState.APPEARANCE);
   }
 };
@@ -706,7 +967,7 @@ anychart.sankeyModule.Chart.prototype.setupByJSON = function(config, opt_default
 
 /** @inheritDoc */
 anychart.sankeyModule.Chart.prototype.disposeInternal = function() {
-  goog.disposeAll();
+  goog.disposeAll(this.palette_);
   anychart.sankeyModule.Chart.base(this, 'disposeInternal');
 };
 
