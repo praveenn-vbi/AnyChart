@@ -142,9 +142,9 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
     firstIndex = this.lastDataCache_.firstIndex || 0;
     count = this.lastDataCache_.count || 0;
   } else {
+    data = [];
+    lookups = [];
     if (stick) {
-      data = [];
-      lookups = [];
       firstIndex = NaN;
       count = 0;
       var i = fromIndex;
@@ -154,7 +154,6 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
       coIterator.reset();
       while (coIterator.advance() && i < toIndex) {
         var currItem;
-        //debugger;
         while (i < toIndex && (currItem = this.data_[i]).key < coIterator.currentKey()) {
           items.push(currItem);
           i++;
@@ -205,8 +204,6 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
       }
       pointsCount = coIterator.getRowsCount();
     } else {
-      data = [];
-      lookups = [];
       firstIndex = 0;
       count = this.data_.length;
 
