@@ -1460,7 +1460,9 @@
         "fill": {"$ref": "#/definitions/fill"},
         "hatchFill": {"$ref": "#/definitions/hatchFillSet"},
         "outline": {"$ref": "#/definitions/anychart.core.ui.Outline"},
-        "center": {"$ref": "#/definitions/anychart.pieModule.Center"}
+        "center": {"$ref": "#/definitions/anychart.pieModule.Center"},
+        "aspect3d": {"type": "number"},
+        "height3d": {"type": "number"}
       },
       "required": ["type"]
     },
@@ -4879,7 +4881,8 @@
             "string"
           ]
         },
-        "itemsFormat": {"type": "string"},
+        "itemsFormat": {"type": ["string", "null"]},
+        "titleFormat": {"type": ["string", "null"]},
         "itemsSourceMode": {"$ref": "#/definitions/anychart.enums.LegendItemsSourceMode"},
         "hoverCursor": {"$ref": "#/definitions/anychart.enums.Cursor"},
         "inverted": {
