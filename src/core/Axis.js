@@ -1242,6 +1242,8 @@ anychart.core.Axis.prototype.getLabelBounds_ = function(index, isMajor, ticksArr
 
   var label = labels.add(formatProvider, positionProvider, index);
   label.stateOrder([label.ownSettings, labels.ownSettings, labels.themeSettings]);
+  // debugger;
+  labels.parentBounds(this.parentBounds());
   var labelBounds = labels.measure(label, undefined, undefined, index);
 
   var labelsSidePosition = anychart.utils.sidePositionToNumber(labelPosition);
@@ -1829,7 +1831,7 @@ anychart.core.Axis.prototype.drawLabel_ = function(value, ratio, index, pixelShi
     label = labels.add(formatProvider, positionProvider, index);
     label.stateOrder([label.ownSettings, labels.ownSettings, labels.themeSettings]);
   }
-  debugger;
+  // debugger;
   label.positionProvider(positionProvider);
 };
 
@@ -1944,6 +1946,7 @@ anychart.core.Axis.prototype.draw = function() {
     var labels = this.labels();
     if (!labels.container()) labels.container(/** @type {acgraph.vector.ILayer} */(this.container()));
     labels.parentBounds(/** @type {anychart.math.Rect} */(this.parentBounds()));
+    labels.invalidate(anychart.ConsistencyState.ALL);
     // labels.clear();
 
     var minorLabels = this.minorLabels();

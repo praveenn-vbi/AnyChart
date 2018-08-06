@@ -752,6 +752,15 @@ anychart.core.ui.LabelsFactory.prototype.draw = function() {
 };
 
 
+anychart.core.ui.LabelsFactory.prototype.parentBounds = function(bounds) {
+  if (goog.isDef(bounds)) {
+    console.log('Bounds came: ', bounds);
+    //debugger;
+  }
+  return anychart.core.ui.LabelsFactory.base(this, 'parentBounds', bounds);
+};
+
+
 //endregion
 //region --- Measuring
 /**
