@@ -487,8 +487,6 @@ anychart.core.VisualBase.prototype.remove = goog.nullFunction;
  */
 anychart.core.VisualBase.prototype.parentBounds = function(opt_boundsOrLeft, opt_top, opt_width, opt_height) {
   if (goog.isDef(opt_boundsOrLeft)) {
-    if (this.getOption('widht') == '50%')
-      debugger;
     var left, top, width, height;
     if (goog.isNull(opt_boundsOrLeft)) {
       if (this.parentBounds_) {
