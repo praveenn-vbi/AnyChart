@@ -1,4 +1,4 @@
-goog.provide('anychart.sankeyModule.elements.Node');
+goog.provide('anychart.sankeyModule.elements.VisualElement');
 
 goog.require('anychart.core.Base');
 goog.require('anychart.core.StateSettings');
@@ -9,26 +9,25 @@ goog.require('anychart.core.settings');
 /**
  * Sankey visual element base settings.
  * @constructor
+ * @param {anychart.sankeyModule.Chart} chart Sankey chart.
  * @extends {anychart.core.Base}
  * @implements {anychart.core.settings.IObjectWithSettings}
  */
-anychart.sankeyModule.elements.VisualElement = function() {
+anychart.sankeyModule.elements.VisualElement = function(chart) {
   anychart.sankeyModule.elements.VisualElement.base(this, 'constructor');
+
+  this.chart = chart;
 
   var descriptorsMap = {};
   anychart.core.settings.createDescriptorsMeta(descriptorsMap, [
     ['fill', 0, anychart.Signal.NEEDS_REDRAW_APPEARANCE],
     ['stroke', 0, anychart.Signal.NEEDS_REDRAW_APPEARANCE],
-    ['hatchFill', 0, anychart.Signal.NEEDS_REDRAW_APPEARANCE]//,
-    // ['labels', 0, 0]
+    ['hatchFill', 0, anychart.Signal.NEEDS_REDRAW_APPEARANCE]
   ]);
 
   this.normal_ = new anychart.core.StateSettings(this, descriptorsMap, anychart.PointState.NORMAL);
-  // this.normal_.setOption(anychart.core.StateSettings.LABELS_AFTER_INIT_CALLBACK, this.labelsAfterInitCallback);
   this.hovered_ = new anychart.core.StateSettings(this, descriptorsMap, anychart.PointState.HOVER);
-  // this.hovered_.setOption(anychart.core.StateSettings.LABELS_AFTER_INIT_CALLBACK, this.labelsAfterInitCallback);
   this.selected_ = new anychart.core.StateSettings(this, descriptorsMap, anychart.PointState.SELECT);
-  // this.selected_.setOption(anychart.core.StateSettings.LABELS_AFTER_INIT_CALLBACK, this.labelsAfterInitCallback);
 };
 goog.inherits(anychart.sankeyModule.elements.VisualElement, anychart.core.Base);
 anychart.core.settings.populateAliases(anychart.sankeyModule.elements.VisualElement, ['fill', 'stroke', 'hatchFill'/*, 'labels'*/], 'normal');
@@ -73,6 +72,70 @@ anychart.sankeyModule.elements.VisualElement.prototype.selected = function(opt_v
     return this;
   }
   return this.selected_;
+};
+
+
+/**
+ * Returns fill for the element.
+ * @param {anychart.PointState|number} state
+ * @param {Object} context
+ * @return {acgraph.vector.Fill|acgraph.vector.Stroke}
+ */
+anychart.sankeyModule.elements.VisualElement.prototype.getFill = function(state, context) {
+  return this.resolveColor('fill', state, context);
+};
+
+
+/**
+ * Returns stroke for the element.
+ * @param {anychart.PointState|number} state
+ * @param {Object} context
+ * @return {acgraph.vector.Fill|acgraph.vector.Stroke}
+ */
+anychart.sankeyModule.elements.VisualElement.prototype.getStroke = function(state, context) {
+  return this.resolveColor('stroke', state, context);
+};
+
+
+/**
+ * Returns hatchFill for the element.
+ * @param {anychart.PointState|number} state
+ * @param {Object} context
+ * @return {acgraph.vector.Fill|acgraph.vector.Stroke}
+ */
+anychart.sankeyModule.elements.VisualElement.prototype.getHatchFill = function(state, context) {
+  return this.resolveColor('hatchFill', state, context);
+};
+
+
+/**
+ * Returns auto hatch fill.
+ * @return {acgraph.vector.HatchFill}
+ */
+anychart.sankeyModule.elements.VisualElement.prototype.getAutoHatchFill = function() {
+  return /** @type {acgraph.vector.HatchFill} */ ('none');
+};
+
+
+/**
+ * Resolves color for element (node, conflict, flow, dropoff).
+ * @param {string} name Color name - fill, stroke, hatchFill
+ * @param {anychart.PointState|number} state
+ * @param {Object} context color resolution context.
+ * @return {acgraph.vector.Fill|acgraph.vector.Stroke}
+ */
+anychart.sankeyModule.elements.VisualElement.prototype.resolveColor = function(name, state, context) {
+  var result;
+  var stateObject = state == anychart.PointState.NORMAL ? this.normal_ : state == anychart.PointState.HOVER ? this.hovered_ : this.selected_;
+  result = stateObject.getOption(name) || this.normal_.getOption(name);
+
+  if (goog.isFunction(result)) {
+    result = result.call(context, context);
+  } else if (result == true) {
+    return this.getAutoHatchFill();
+  }
+
+  return result;
 };
 
 
