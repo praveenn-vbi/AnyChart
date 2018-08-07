@@ -144,9 +144,9 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
   } else {
     data = [];
     lookups = [];
+    count = 0;
     if (stick) {
       firstIndex = NaN;
-      count = 0;
       var i = fromIndex;
       var prevIterKey = NaN;
       var prevIterIndex = NaN;
@@ -232,8 +232,8 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
               emIndex: lookup
             });
             lookups.push(lookup);
-            lookup += 1;
-            count = lookup;
+            lookup++;
+            count++;
           }
         }
         prevKey = currentKey;
@@ -251,8 +251,8 @@ anychart.stockModule.eventMarkers.Table.prototype.getIterator = function(coItera
               emIndex: lookup
             });
             lookups.push(lookup);
-            lookup += 1;
-            count = lookup;
+            lookup++;
+            count++;
           }
         }
       }
