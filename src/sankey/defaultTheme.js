@@ -18,7 +18,7 @@ goog.mixin(goog.global['anychart']['themes']['defaultTheme'], {
     'conflict': {
       'normal': {
         'fill': anychart.core.defaultTheme.returnSourceColor,
-        'stroke': '2 red',
+        'stroke': '2 red'
       }
     },
     'dropoff': {

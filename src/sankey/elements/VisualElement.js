@@ -34,6 +34,15 @@ anychart.core.settings.populateAliases(anychart.sankeyModule.elements.VisualElem
 
 
 /**
+ * Supported signals mask.
+ * @type {number}
+ */
+anychart.sankeyModule.elements.VisualElement.prototype.SUPPORTED_SIGNALS =
+    anychart.core.Base.prototype.SUPPORTED_SIGNALS |
+    anychart.Signal.NEEDS_REDRAW_APPEARANCE;
+
+
+/**
  * Normal state settings.
  * @param {!Object=} opt_value
  * @return {anychart.core.StateSettings|anychart.sankeyModule.elements.VisualElement}

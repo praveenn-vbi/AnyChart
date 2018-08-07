@@ -476,6 +476,16 @@ anychart.sankeyModule.Chart.prototype.getAllSeries = function() {
 //endregion
 //region Element Settings
 /**
+ * Conflict invalidation handler.
+ * @param {anychart.SignalEvent} event
+ * @private
+ */
+anychart.sankeyModule.Chart.prototype.elementInvalidated_ = function(event) {
+  this.invalidate(anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW);
+};
+
+
+/**
  * TODO: add docs
  * @param {Object=} opt_value
  * @return {anychart.sankeyModule.elements.Conflict|anychart.sankeyModule.Chart}
@@ -483,23 +493,13 @@ anychart.sankeyModule.Chart.prototype.getAllSeries = function() {
 anychart.sankeyModule.Chart.prototype.conflict = function(opt_value) {
   if (!this.conflict_) {
     this.conflict_ = new anychart.sankeyModule.elements.Conflict();
-    this.conflict_.listenSignals(this.conflictInvalidated_, this);
+    this.conflict_.listenSignals(this.elementInvalidated_, this);
   }
   if (goog.isDef(opt_value)) {
     this.conflict_.setup(opt_value);
     return this;
   }
   return this.conflict_;
-};
-
-
-/**
- * Conflict invalidation handler.
- * @param {anychart.SignalEvent} event
- * @private
- */
-anychart.sankeyModule.Chart.prototype.conflictInvalidated_ = function(event) {
-  //
 };
 
 
@@ -511,23 +511,13 @@ anychart.sankeyModule.Chart.prototype.conflictInvalidated_ = function(event) {
 anychart.sankeyModule.Chart.prototype.dropoff = function(opt_value) {
   if (!this.dropoff_) {
     this.dropoff_ = new anychart.sankeyModule.elements.Dropoff();
-    this.dropoff_.listenSignals(this.dropoffInvalidated_, this);
+    this.dropoff_.listenSignals(this.elementInvalidated_, this);
   }
   if (goog.isDef(opt_value)) {
     this.dropoff_.setup(opt_value);
     return this;
   }
   return this.dropoff_;
-};
-
-
-/**
- * Dropoff invalidation handler.
- * @param {anychart.SignalEvent} event
- * @private
- */
-anychart.sankeyModule.Chart.prototype.dropoffInvalidated_ = function(event) {
-  //
 };
 
 
@@ -539,23 +529,13 @@ anychart.sankeyModule.Chart.prototype.dropoffInvalidated_ = function(event) {
 anychart.sankeyModule.Chart.prototype.flow = function(opt_value) {
   if (!this.flow_) {
     this.flow_ = new anychart.sankeyModule.elements.Flow();
-    this.flow_.listenSignals(this.flowInvalidated_, this);
+    this.flow_.listenSignals(this.elementInvalidated_, this);
   }
   if (goog.isDef(opt_value)) {
     this.flow_.setup(opt_value);
     return this;
   }
   return this.flow_;
-};
-
-
-/**
- * Dropoff invalidation handler.
- * @param {anychart.SignalEvent} event
- * @private
- */
-anychart.sankeyModule.Chart.prototype.flowInvalidated_ = function(event) {
-  //
 };
 
 
@@ -567,23 +547,13 @@ anychart.sankeyModule.Chart.prototype.flowInvalidated_ = function(event) {
 anychart.sankeyModule.Chart.prototype.node = function(opt_value) {
   if (!this.node_) {
     this.node_ = new anychart.sankeyModule.elements.Node();
-    this.node_.listenSignals(this.nodeInvalidated_, this);
+    this.node_.listenSignals(this.elementInvalidated_, this);
   }
   if (goog.isDef(opt_value)) {
     this.node_.setup(opt_value);
     return this;
   }
   return this.node_;
-};
-
-
-/**
- * Dropoff invalidation handler.
- * @param {anychart.SignalEvent} event
- * @private
- */
-anychart.sankeyModule.Chart.prototype.nodeInvalidated_ = function(event) {
-  //
 };
 
 
@@ -859,14 +829,14 @@ anychart.sankeyModule.Chart.prototype.drawContent = function(bounds) {
   // calculates everything that can be calculated from data
   this.calculate();
 
-  this.rootElement.removeChildren();
-
-  this.conflictPaths = [];
-  this.dropoffPaths = [];
-  this.nodePaths = [];
-  this.flowPaths = [];
 
   if (this.hasInvalidationState(anychart.ConsistencyState.BOUNDS)) {
+    this.rootElement.removeChildren();
+    this.conflictPaths = [];
+    this.dropoffPaths = [];
+    this.nodePaths = [];
+    this.flowPaths = [];
+
     var level;
     var levelsCount = this.levels.length;
     var levelWidth = bounds.width / levelsCount;
@@ -984,7 +954,6 @@ anychart.sankeyModule.Chart.prototype.drawContent = function(bounds) {
     }
 
     var curvy = 0.33 * (bounds.width - nodeWidth) / (this.levels.length - 1);
-    var curveFactor = 0.5;
 
     for (var name in this.nodes) {
       var fromNode = this.nodes[name];
@@ -1009,7 +978,7 @@ anychart.sankeyModule.Chart.prototype.drawContent = function(bounds) {
 
         this.flowPaths.push(path);
 
-        var centerX = (fromCoords.x + toCoords.x) / 2;
+        /*var centerX = (fromCoords.x + toCoords.x) / 2;
         var flowHeight = fromCoords.y2 - fromCoords.y1;
 
         var centerY = (fromCoords.y1 + toCoords.y1) / 2;
@@ -1027,15 +996,15 @@ anychart.sankeyModule.Chart.prototype.drawContent = function(bounds) {
             .lineTo(toCoords.x, toCoords.y2)
             .quadraticCurveTo(controlX2, controlY2 + flowHeight, centerX, centerY + flowHeight, controlX1, controlY1 + flowHeight, fromCoords.x, fromCoords.y2)
             .lineTo(fromCoords.x, fromCoords.y2)
-            .close();
+            .close();*/
 
-        /*path
+        path
             .moveTo(fromCoords.x, fromCoords.y1)
             .curveTo(fromCoords.x + curvy, fromCoords.y1, toCoords.x - curvy, toCoords.y1, toCoords.x, toCoords.y1)
             .lineTo(toCoords.x, toCoords.y2)
             .curveTo(toCoords.x - curvy, toCoords.y2, fromCoords.x + curvy, fromCoords.y2, fromCoords.x, fromCoords.y2)
             .lineTo(fromCoords.x, fromCoords.y1)
-            .close();*/
+            .close();
 
         /*path
             .moveTo(fromCoords.x, fromCoords.y1)
@@ -1046,18 +1015,15 @@ anychart.sankeyModule.Chart.prototype.drawContent = function(bounds) {
             .close();*/
       }
 
+      //TODO(AntonKagakin): rework dropoff width/height calculation
+      // width is a percent of full node weight, but limited
+      // length of the "arrow" depends on dropoff width
       if (fromNode.dropoffValues.length) {
         x = fromNode.right;
         height = fromNode.dropoffValue * this.weightAspect;
         var y2 = fromNode.bottom;
         var y1 = y2 - height;
-        var gradient = {
-          angle: -90,
-          keys: [
-            {color: 'red', offset: 0},
-            {color: 'white', offset: 1}
-          ]
-        };
+
         path = this.rootElement.path().zIndex(1);
 
         path.tag = {
