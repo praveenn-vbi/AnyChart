@@ -1,7 +1,12 @@
 //region Provide / Require
 goog.provide('anychart.sankeyModule.Chart');
 goog.require('anychart.core.SeparateChart');
+goog.require('anychart.core.StateSettings');
 goog.require('anychart.data.Set');
+goog.require('anychart.sankeyModule.elements.Conflict');
+goog.require('anychart.sankeyModule.elements.Dropoff');
+goog.require('anychart.sankeyModule.elements.Flow');
+goog.require('anychart.sankeyModule.elements.Node');
 //endregion
 //region Constructor
 
@@ -22,7 +27,7 @@ goog.inherits(anychart.sankeyModule.Chart, anychart.core.SeparateChart);
 
 
 //endregion
-//region States/Signals
+//region ConsistencyStates / Signals
 /**
  * Supported signals.
  * @type {number}
@@ -465,6 +470,120 @@ anychart.sankeyModule.Chart.prototype.getSeriesStatus = function() {
 /** @inheritDoc */
 anychart.sankeyModule.Chart.prototype.getAllSeries = function() {
   return [];
+};
+
+
+//endregion
+//region Element Settings
+/**
+ * TODO: add docs
+ * @param {Object=} opt_value
+ * @return {anychart.sankeyModule.elements.Conflict|anychart.sankeyModule.Chart}
+ */
+anychart.sankeyModule.Chart.prototype.conflict = function(opt_value) {
+  if (!this.conflict_) {
+    this.conflict_ = new anychart.sankeyModule.elements.Conflict();
+    this.conflict_.listenSignals(this.conflictInvalidated_, this);
+  }
+  if (goog.isDef(opt_value)) {
+    this.conflict_.setup(opt_value);
+    return this;
+  }
+  return this.conflict_;
+};
+
+
+/**
+ * Conflict invalidation handler.
+ * @param {anychart.SignalEvent} event
+ * @private
+ */
+anychart.sankeyModule.Chart.prototype.conflictInvalidated_ = function(event) {
+  //
+};
+
+
+/**
+ * TODO: add docs
+ * @param {Object=} opt_value
+ * @return {anychart.sankeyModule.elements.Dropoff|anychart.sankeyModule.Chart}
+ */
+anychart.sankeyModule.Chart.prototype.dropoff = function(opt_value) {
+  if (!this.dropoff_) {
+    this.dropoff_ = new anychart.sankeyModule.elements.Dropoff();
+    this.dropoff_.listenSignals(this.dropoffInvalidated_, this);
+  }
+  if (goog.isDef(opt_value)) {
+    this.dropoff_.setup(opt_value);
+    return this;
+  }
+  return this.dropoff_;
+};
+
+
+/**
+ * Dropoff invalidation handler.
+ * @param {anychart.SignalEvent} event
+ * @private
+ */
+anychart.sankeyModule.Chart.prototype.dropoffInvalidated_ = function(event) {
+  //
+};
+
+
+/**
+ * TODO: add docs
+ * @param {Object=} opt_value
+ * @return {anychart.sankeyModule.elements.Flow|anychart.sankeyModule.Chart}
+ */
+anychart.sankeyModule.Chart.prototype.flow = function(opt_value) {
+  if (!this.flow_) {
+    this.flow_ = new anychart.sankeyModule.elements.Flow();
+    this.flow_.listenSignals(this.flowInvalidated_, this);
+  }
+  if (goog.isDef(opt_value)) {
+    this.flow_.setup(opt_value);
+    return this;
+  }
+  return this.flow_;
+};
+
+
+/**
+ * Dropoff invalidation handler.
+ * @param {anychart.SignalEvent} event
+ * @private
+ */
+anychart.sankeyModule.Chart.prototype.flowInvalidated_ = function(event) {
+  //
+};
+
+
+/**
+ * TODO: add docs
+ * @param {Object=} opt_value
+ * @return {anychart.sankeyModule.elements.Node|anychart.sankeyModule.Chart}
+ */
+anychart.sankeyModule.Chart.prototype.node = function(opt_value) {
+  if (!this.node_) {
+    this.node_ = new anychart.sankeyModule.elements.Node();
+    this.node_.listenSignals(this.nodeInvalidated_, this);
+  }
+  if (goog.isDef(opt_value)) {
+    this.node_.setup(opt_value);
+    return this;
+  }
+  return this.node_;
+};
+
+
+/**
+ * Dropoff invalidation handler.
+ * @param {anychart.SignalEvent} event
+ * @private
+ */
+anychart.sankeyModule.Chart.prototype.nodeInvalidated_ = function(event) {
+  //
 };
 
 
@@ -962,12 +1081,21 @@ anychart.sankeyModule.Chart.prototype.serialize = function() {
 anychart.sankeyModule.Chart.prototype.setupByJSON = function(config, opt_default) {
   anychart.sankeyModule.Chart.base(this, 'setupByJSON', config, opt_default);
   anychart.core.settings.deserialize(this, anychart.sankeyModule.Chart.OWN_DESCRIPTORS, config, opt_default);
+
+  if ('conflict' in config)
+    this.conflict().setupInternal(!!opt_default, config['conflict']);
+  if ('dropoff' in config)
+    this.dropoff().setupInternal(!!opt_default, config['dropoff']);
+  if ('flow' in config)
+    this.flow().setupInternal(!!opt_default, config['flow']);
+  if ('node' in config)
+    this.node().setupInternal(!!opt_default, config['node']);
 };
 
 
 /** @inheritDoc */
 anychart.sankeyModule.Chart.prototype.disposeInternal = function() {
-  goog.disposeAll(this.palette_);
+  goog.disposeAll(this.palette_, this.conflict_, this.dropoff_, this.flow_, this.node_);
   anychart.sankeyModule.Chart.base(this, 'disposeInternal');
 };
 
