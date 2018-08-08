@@ -911,7 +911,7 @@ anychart.ganttModule.Scale.prototype.zoomLevels = function(opt_value) {
     if (!same) {
       this.ranges_ = newZoomLevels;
       this.consistent = false;
-      this.dispatchSignal(anychart.Signal.NEED_UPDATE_TICK_DEPENDENT);
+      this.dispatchSignal(anychart.Signal.NEED_UPDATE_TICK_DEPENDENT | anychart.Signal.NEEDS_RECALCULATION);
     }
     return this;
   }
