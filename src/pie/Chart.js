@@ -4050,7 +4050,7 @@ anychart.pieModule.Chart.prototype.onLegendItemSignal_ = function(event) {
   if (event.hasSignal(anychart.Signal.BOUNDS_CHANGED)) {
     signal |= anychart.Signal.BOUNDS_CHANGED;
   }
-  this.invalidate(anychart.core.ui.Legend.prototype.SUPPORTED_CONSISTENCY_STATES | anychart.ConsistencyState.APPEARANCE, signal);
+  this.invalidate(anychart.core.ui.Legend.prototype.SUPPORTED_CONSISTENCY_STATES, signal);
 };
 //endregion
 //region --- Legend
@@ -4093,9 +4093,11 @@ anychart.pieModule.Chart.prototype.createLegendItemsProvider = function(sourceMo
   }
   while (iterator.advance()) {
     index = iterator.getIndex();
-    var legendItem = /** @type {anychart.core.ui.Legend.LegendItemProvider}*/ (this.legendItemAt(index));
-    legendItem.markAllConsistent();
-    legendItem = legendItem.serialize();
+    var legendItem = /** @type {Object} */ (iterator.get('legendItem') || {});
+    var legendItemData = /** @type {anychart.core.ui.Legend.LegendItemProvider}*/ (this.legendItemAt(index));
+    legendItemData.markAllConsistent();
+    legendItemData = legendItemData.serialize();
+
     var itemText = null;
     if (goog.isFunction(itemsFormat)) {
       var format = this.createFormatProvider();
@@ -4122,13 +4124,17 @@ anychart.pieModule.Chart.prototype.createLegendItemsProvider = function(sourceMo
         'pointIndex': index,
         'pointValue': iterator.get('value')
       },
-      'iconType': legendItem['iconMarkerType'] || anychart.enums.LegendItemIconType.SQUARE,
       'text': itemText,
       'iconStroke': mode3d ? this.get3DStrokeColor() : /** @type {acgraph.vector.Stroke} */ (strokeResolver(this, anychart.PointState.NORMAL, false, null)),
       'iconFill': mode3d ? this.get3DFillColor_(anychart.PointState.NORMAL) : /** @type {acgraph.vector.Fill} */ (fillResolver(this, anychart.PointState.NORMAL, false, null)),
       'iconHatchFill': /** @type {acgraph.vector.HatchFill} */ (hatchFillResolver(this, anychart.PointState.NORMAL, false, null))
     };
-    goog.object.extend(obj, legendItem);
+    if (legendItemData['iconMarkerType']) {
+      legendItemData['iconType'] = legendItemData['iconMarkerType'];
+      delete legendItemData['iconMarkerType'];
+    }
+    goog.object.extend(obj, legendItem, legendItemData);
+    obj['iconType'] = obj['iconType'] || anychart.enums.LegendItemIconType.SQUARE;
     obj['sourceUid'] = goog.getUid(this);
     obj['sourceKey'] = index;
     data.push(obj);
