@@ -220,10 +220,11 @@ anychart.radarPolarBaseModule.Series.prototype.ratiosToPixelPairs = function(x, 
   var startAngle = /** @type {number} */(this.getOption('startAngle'));
   for (var i = 0; i < ys.length; i++) {
     var y = ys[i];
-    var angle = anychart.math.round(goog.math.toRadians(goog.math.modulo(startAngle - 90 + 360 * x, 360)), 4);
-    var yPixelShift = 0;
-    var xPixelShift = 0;
     var angleDegrees = goog.math.modulo(startAngle - 90 + 360 * x, 360);
+    var angle = anychart.math.round(goog.math.toRadians(angleDegrees), 4);
+
+    var xPixelShift = 0;
+    angleDegrees = Math.round(angleDegrees);
     if (angleDegrees == 90) {
       xPixelShift = -.5;
     } else if (angleDegrees == 270) {
