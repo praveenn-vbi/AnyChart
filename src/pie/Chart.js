@@ -4057,12 +4057,12 @@ anychart.pieModule.Chart.prototype.onLegendItemSignal_ = function(event) {
 
 
 /**
- * Sets/Gets legend item setting for series.
+ * Sets/Gets legend item setting for point by index.
  * @param {number} index
  * @param {(Object)=} opt_value Legend item settings object.
  * @return {(anychart.core.utils.LegendItemSettings|anychart.pieModule.Chart)} Legend item settings or self for chaining.
  */
-anychart.pieModule.Chart.prototype.legendItem = function(index, opt_value) {
+anychart.pieModule.Chart.prototype.legendItemAt = function(index, opt_value) {
   if (!this.legendItems_[index]) {
     var legendItm = new anychart.core.utils.LegendItemSettings();
     legendItm.listenSignals(this.onLegendItemSignal_, this);
@@ -4093,7 +4093,7 @@ anychart.pieModule.Chart.prototype.createLegendItemsProvider = function(sourceMo
   }
   while (iterator.advance()) {
     index = iterator.getIndex();
-    var legendItem = /** @type {anychart.core.ui.Legend.LegendItemProvider}*/ (this.legendItem(index));
+    var legendItem = /** @type {anychart.core.ui.Legend.LegendItemProvider}*/ (this.legendItemAt(index));
     legendItem.markAllConsistent();
     legendItem = legendItem.serialize();
     var itemText = null;
@@ -4122,7 +4122,7 @@ anychart.pieModule.Chart.prototype.createLegendItemsProvider = function(sourceMo
         'pointIndex': index,
         'pointValue': iterator.get('value')
       },
-      'iconType': legendItem.iconMarkerType || anychart.enums.LegendItemIconType.SQUARE,
+      'iconType': legendItem['iconMarkerType'] || anychart.enums.LegendItemIconType.SQUARE,
       'text': itemText,
       'iconStroke': mode3d ? this.get3DStrokeColor() : /** @type {acgraph.vector.Stroke} */ (strokeResolver(this, anychart.PointState.NORMAL, false, null)),
       'iconFill': mode3d ? this.get3DFillColor_(anychart.PointState.NORMAL) : /** @type {acgraph.vector.Fill} */ (fillResolver(this, anychart.PointState.NORMAL, false, null)),
@@ -4779,7 +4779,7 @@ anychart.pieModule.Chart.prototype.setupByJSON = function(config, opt_default) {
   if (goog.isDef(config['legendItems'])) {
     var items = config['legendItems'];
     for (var i = 0; i < items.length; i++) {
-      this.legendItem(i, items[i]);
+      this.legendItemAt(i, items[i]);
     }
   }
   this.normal_.setupInternal(!!opt_default, config);
@@ -5246,6 +5246,7 @@ anychart.pieModule.Chart.PieOutsideLabelsDomain.prototype.calculate = function()
   proto['getPixelRadius'] = proto.getPixelRadius;//doc|need-ex
   proto['getPixelInnerRadius'] = proto.getPixelInnerRadius;//doc|need-ex
   proto['getPixelExplode'] = proto.getPixelExplode;
+  proto['legendItemAt'] = proto.legendItemAt;
   proto['palette'] = proto.palette;//doc|ex
   proto['tooltip'] = proto.tooltip;//doc|ex
   proto['hatchFillPalette'] = proto.hatchFillPalette;
