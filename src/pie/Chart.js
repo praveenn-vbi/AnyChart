@@ -14,6 +14,7 @@ goog.require('anychart.core.ui.CircularLabelsFactory');
 goog.require('anychart.core.ui.Tooltip');
 goog.require('anychart.core.utils.IInteractiveSeries');
 goog.require('anychart.core.utils.InteractivityState');
+goog.require('anychart.core.utils.LegendItemSettings');
 goog.require('anychart.core.utils.TypedLayer');
 goog.require('anychart.data.Set');
 goog.require('anychart.enums');
@@ -71,6 +72,12 @@ anychart.pieModule.Chart = function(opt_data, opt_csvSettings) {
    * @private
    */
   this.hatchFillPalette_ = null;
+
+  /**
+   * @type {Array.<anychart.core.utils.LegendItemSettings>}
+   * @private
+   */
+  this.legendItems_ = [];
 
   /**
    * Original view for the chart data.
@@ -396,7 +403,8 @@ anychart.pieModule.Chart.prototype.SUPPORTED_CONSISTENCY_STATES =
     anychart.ConsistencyState.APPEARANCE |
     anychart.ConsistencyState.PIE_LABELS |
     anychart.ConsistencyState.PIE_CENTER_CONTENT |
-    anychart.ConsistencyState.PIE_DATA;
+    anychart.ConsistencyState.PIE_DATA |
+    anychart.ConsistencyState.ALL;
 
 
 /**
@@ -4032,8 +4040,43 @@ anychart.pieModule.Chart.prototype.getExplode = function(opt_pointState, opt_ign
 };
 
 
+/**
+ * Listener for legend item settings invalidation.
+ * @param {anychart.SignalEvent} event Invalidation event.
+ * @private
+ */
+anychart.pieModule.Chart.prototype.onLegendItemSignal_ = function(event) {
+  var signal = anychart.Signal.NEEDS_REDRAW | anychart.Signal.NEED_UPDATE_LEGEND;
+  if (event.hasSignal(anychart.Signal.BOUNDS_CHANGED)) {
+    signal |= anychart.Signal.BOUNDS_CHANGED;
+  }
+  this.invalidate(anychart.core.ui.Legend.prototype.SUPPORTED_CONSISTENCY_STATES | anychart.ConsistencyState.APPEARANCE, signal);
+};
 //endregion
 //region --- Legend
+
+
+/**
+ * Sets/Gets legend item setting for series.
+ * @param {number} index
+ * @param {(Object)=} opt_value Legend item settings object.
+ * @return {(anychart.core.utils.LegendItemSettings|anychart.pieModule.Chart)} Legend item settings or self for chaining.
+ */
+anychart.pieModule.Chart.prototype.legendItem = function(index, opt_value) {
+  if (!this.legendItems_[index]) {
+    var legendItm = new anychart.core.utils.LegendItemSettings();
+    legendItm.listenSignals(this.onLegendItemSignal_, this);
+    this.legendItems_[index] = legendItm;
+  }
+  if (goog.isDef(opt_value)) {
+    this.legendItems_[index].setup(opt_value);
+    return this;
+  }
+
+  return this.legendItems_[index];
+};
+
+
 /** @inheritDoc */
 anychart.pieModule.Chart.prototype.createLegendItemsProvider = function(sourceMode, itemsFormat) {
   /**
@@ -4050,7 +4093,9 @@ anychart.pieModule.Chart.prototype.createLegendItemsProvider = function(sourceMo
   }
   while (iterator.advance()) {
     index = iterator.getIndex();
-    var legendItem = /** @type {Object} */ (iterator.get('legendItem') || {});
+    var legendItem = /** @type {anychart.core.ui.Legend.LegendItemProvider}*/ (this.legendItem(index));
+    legendItem.markAllConsistent();
+    legendItem = legendItem.serialize();
     var itemText = null;
     if (goog.isFunction(itemsFormat)) {
       var format = this.createFormatProvider();
@@ -4077,7 +4122,7 @@ anychart.pieModule.Chart.prototype.createLegendItemsProvider = function(sourceMo
         'pointIndex': index,
         'pointValue': iterator.get('value')
       },
-      'iconType': anychart.enums.LegendItemIconType.SQUARE,
+      'iconType': legendItem.iconMarkerType || anychart.enums.LegendItemIconType.SQUARE,
       'text': itemText,
       'iconStroke': mode3d ? this.get3DStrokeColor() : /** @type {acgraph.vector.Stroke} */ (strokeResolver(this, anychart.PointState.NORMAL, false, null)),
       'iconFill': mode3d ? this.get3DFillColor_(anychart.PointState.NORMAL) : /** @type {acgraph.vector.Fill} */ (fillResolver(this, anychart.PointState.NORMAL, false, null)),
@@ -4683,6 +4728,12 @@ anychart.pieModule.Chart.prototype.serialize = function() {
   json['hovered'] = this.hovered_.serialize();
   json['selected'] = this.selected_.serialize();
 
+  var legendItems = [];
+  for (var i = 0; i < this.legendItems_.length; i++) {
+    legendItems.push(this.legendItems_[i].serialize());
+  }
+  json['legendItems'] = legendItems;
+
   // The values of group() function can be function or null or 'none'. So we don't serialize it anyway.
   //if (goog.isFunction(this['group'])) {
   //  if (goog.isFunction(this.group())) {
@@ -4725,6 +4776,12 @@ anychart.pieModule.Chart.prototype.setupByJSON = function(config, opt_default) {
     delete config['explode'];
   }
 
+  if (goog.isDef(config['legendItems'])) {
+    var items = config['legendItems'];
+    for (var i = 0; i < items.length; i++) {
+      this.legendItem(i, items[i]);
+    }
+  }
   this.normal_.setupInternal(!!opt_default, config);
   this.normal_.setupInternal(!!opt_default, config['normal']);
 

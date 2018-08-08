@@ -66,6 +66,7 @@ anychart.core.utils.LegendItemSettings.prototype.reset = function() {
   this.iconSize_ = undefined;
   this.disabled_ = undefined;
   // text is not reset.
+  this.dispatchSignal(anychart.Signal.NEEDS_REDRAW);
 };
 
 
