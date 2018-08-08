@@ -1358,7 +1358,7 @@ anychart.core.ChartWithAxes.prototype.drawElements = function() {
       axis = /** @type {anychart.core.Axis} */(axes[i]);
       if (axis) {
         axis.suspendSignalsDispatching();
-        axis.container(/** @type {acgraph.vector.ILayer} */(this.container()));
+        axis.container(this.rootElement);
         axis.draw();
         axis.resumeSignalsDispatching(false);
       }

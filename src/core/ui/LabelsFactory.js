@@ -2358,7 +2358,7 @@ anychart.core.ui.LabelsFactory.Label.prototype.draw = function() {
 
     if (!this.finalParentBounds) {
       if (factory.container()) {
-        this.finalParentBounds = factory.container().getBounds();
+        this.finalParentBounds = this.parentBounds();
       } else {
         this.finalParentBounds = anychart.math.rect(0, 0, 0, 0);
       }
