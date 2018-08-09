@@ -60,9 +60,9 @@ anychart.colorScalesModule.Linear.prototype.extractKeys_ = function(var_args) {
     var arg = arguments[i];
 
     if (goog.isString(arg)) {
-      keys.push(acgraph.vector.parseColor(arg, true));
+      keys.push(arg);
     } else if (goog.isArray(arg)) {
-      return acgraph.vector.normalizeFill(arg)['keys'];
+      keys.push.apply(keys, arg);
     } else if (goog.isObject(arg)) {
       var keysAttr = arg['keys'];
       if (goog.isDef(keysAttr) && goog.isArray(keysAttr)) {
@@ -84,6 +84,7 @@ anychart.colorScalesModule.Linear.prototype.extractKeys_ = function(var_args) {
     }
   }
 
+  keys = acgraph.vector.normalizeFill(keys)['keys'];
   return keys;
 };
 
